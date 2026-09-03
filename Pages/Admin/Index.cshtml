@@ -1,0 +1,1665 @@
+@page
+
+@model ServerRoomMonitor.Pages.Admin.IndexModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+
+    var latestInspection = Model.RecentInspections.FirstOrDefault();
+    var passedRecent = Model.RecentInspections.Count(i => i.IsOk);
+    var issuesRecent = Model.RecentInspections.Count(i => !i.IsOk);
+}
+
+<div class="dashboard">
+
+    <main class="main">
+
+        <!-- PAGE HEADER -->
+        <header class="top">
+            <div>
+                <span class="eyebrow">OVERVIEW</span>
+
+                <h1>Dashboard</h1>
+
+                <p>
+                    Monitor your server rooms and inspection activity.
+                </p>
+            </div>
+
+            <a asp-page="/ServerRooms/Index"
+               class="add-button">
+                + Add server room
+            </a>
+        </header>
+
+
+        <!-- =====================================================
+             STAT CARDS
+             ===================================================== -->
+
+        <section class="stats">
+
+            <div class="stat">
+                <div class="stat-icon blue">
+                    ▦
+                </div>
+
+                <div>
+                    <span>Server rooms</span>
+                    <strong>@Model.TotalRooms</strong>
+                </div>
+            </div>
+
+
+            <div class="stat">
+                <div class="stat-icon green">
+                    ✓
+                </div>
+
+                <div>
+                    <span>Up to date</span>
+                    <strong class="green">@Model.UpToDateRooms</strong>
+                </div>
+            </div>
+
+
+            <div class="stat">
+                <div class="stat-icon red">
+                    !
+                </div>
+
+                <div>
+                    <span>Needs attention</span>
+                    <strong class="red">@Model.OverdueRooms</strong>
+                </div>
+            </div>
+
+
+            <div class="stat">
+                <div class="stat-icon orange">
+                    !
+                </div>
+
+                <div>
+                    <span>Reminders</span>
+                    <strong class="orange">@Model.ActiveReminders</strong>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             MAIN DASHBOARD
+             ===================================================== -->
+
+        <div class="dashboard-grid">
+
+            <!-- =================================================
+                 RECENT INSPECTIONS
+                 ================================================= -->
+
+            <section class="card inspections-card">
+
+                <div class="card-header">
+
+                    <div>
+                        <h2>Recent inspections</h2>
+
+                        <p>
+                            Latest inspections performed across your server rooms.
+                        </p>
+                    </div>
+
+                    <span class="count-badge">
+                        @Model.TotalInspections
+                    </span>
+
+                </div>
+
+
+                @if (!Model.RecentInspections.Any())
+                {
+                    <div class="empty">
+
+                        <div class="empty-icon">
+                            —
+                        </div>
+
+                        <div>
+                            <strong>No inspections yet</strong>
+
+                            <p>
+                                Completed inspections will appear here.
+                            </p>
+                        </div>
+
+                    </div>
+                }
+                else
+                {
+                    <div class="inspection-list">
+
+                        @foreach (var inspection in Model.RecentInspections)
+                        {
+                            <div class="inspection-row">
+
+                                <!-- STATUS -->
+                                <div class="inspection-status @(inspection.IsOk ? "status-ok" : "status-warning")">
+                                    @(inspection.IsOk ? "✓" : "!")
+                                </div>
+
+
+                                <!-- ROOM + TECHNICIAN -->
+                                <div class="inspection-info">
+
+                                    <strong>
+                                        @(inspection.ServerRoom?.Name ?? "Unknown room")
+                                    </strong>
+
+                                    <span class="technician">
+
+                                        Inspected by
+
+                                        <b>
+                                            @(inspection.Technician?.UserName ?? "Unknown technician")
+                                        </b>
+
+                                    </span>
+
+                                </div>
+
+
+                                <!-- TEMPERATURE -->
+                                <div class="inspection-temperature">
+
+                                    <span>
+                                        Temperature
+                                    </span>
+
+                                    <strong class="@(inspection.TemperatureOk ? "temperature-ok" : "temperature-warning")">
+                                        @inspection.Temperature.ToString("0.0")°C
+                                    </strong>
+
+                                </div>
+
+
+                                <!-- RESULT -->
+                                <div class="inspection-result">
+
+                                    <span class="result @(inspection.IsOk ? "result-ok" : "result-warning")">
+                                        @(inspection.IsOk ? "Passed" : "Issues found")
+                                    </span>
+
+                                    <small>
+                                        @inspection.CheckedAt.ToString("dd MMM yyyy, HH:mm")
+                                    </small>
+
+                                </div>
+
+                            </div>
+                        }
+
+                    </div>
+
+
+                    <!-- =================================================
+                         PAGINATION
+                         ================================================= -->
+
+                    @if (Model.TotalPages > 1)
+                    {
+                        <div class="pagination">
+
+                            <div class="pagination-info">
+
+                                Showing
+
+                                <strong>
+                                    @Model.StartInspection
+                                </strong>
+
+                                -
+
+                                <strong>
+                                    @Model.EndInspection
+                                </strong>
+
+                                of
+
+                                <strong>
+                                    @Model.TotalInspections
+                                </strong>
+
+                            </div>
+
+
+                            <div class="pagination-buttons">
+
+                                @if (Model.CurrentPage > 1)
+                                {
+                                    <a asp-page="./Index"
+                                       asp-route-pageNumber="@(Model.CurrentPage - 1)"
+                                       class="page-button">
+
+                                        ←
+
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="page-button disabled">
+                                        ←
+                                    </span>
+                                }
+
+
+                                @for (int pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++)
+                                {
+                                    <a asp-page="./Index"
+                                       asp-route-pageNumber="@pageNumber"
+                                       class="page-button @(pageNumber == Model.CurrentPage ? "active" : "")">
+
+                                        @pageNumber
+
+                                    </a>
+                                }
+
+
+                                @if (Model.CurrentPage < Model.TotalPages)
+                                {
+                                    <a asp-page="./Index"
+                                       asp-route-pageNumber="@(Model.CurrentPage + 1)"
+                                       class="page-button">
+
+                                        →
+
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="page-button disabled">
+                                        →
+                                    </span>
+                                }
+
+                            </div>
+
+                        </div>
+                    }
+                }
+
+            </section>
+
+
+            <!-- =================================================
+                 INSPECTION ACTIVITY
+                 ================================================= -->
+
+            <section class="card activity-card">
+
+                <div class="card-header">
+
+                    <div>
+                        <h2>Inspection activity</h2>
+
+                        <p>
+                            Results from the displayed inspections.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="activity-content">
+
+                    <!-- TOTAL -->
+
+                    <div class="activity-main">
+
+                        <span class="activity-label">
+                            Inspections
+                        </span>
+
+                        <strong>
+                            @Model.TotalInspections
+                        </strong>
+
+                        <span class="activity-description">
+                            inspections recorded
+                        </span>
+
+                    </div>
+
+
+                    <div class="activity-divider"></div>
+
+
+                    <!-- PASSED -->
+
+                    <div class="activity-stat">
+
+                        <div class="activity-stat-icon green">
+                            ✓
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                @passedRecent
+                            </strong>
+
+                            <span>
+                                Passed on this page
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ISSUES -->
+
+                    <div class="activity-stat">
+
+                        <div class="activity-stat-icon red">
+                            !
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                @issuesRecent
+                            </strong>
+
+                            <span>
+                                Issues on this page
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- LAST INSPECTION -->
+
+                    <div class="last-inspection">
+
+                        <span class="activity-label">
+                            Most recent inspection
+                        </span>
+
+
+                        @if (latestInspection != null)
+                        {
+                            <strong>
+                                @latestInspection.CheckedAt.ToString("dd MMM yyyy")
+                            </strong>
+
+                            <span>
+
+                                @latestInspection.CheckedAt.ToString("HH:mm")
+
+                                ·
+
+                                @(latestInspection.ServerRoom?.Name ?? "Unknown room")
+
+                            </span>
+                        }
+                        else
+                        {
+                            <strong>
+                                —
+                            </strong>
+
+                            <span>
+                                No inspections recorded
+                            </span>
+                        }
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+
+        <!-- =====================================================
+             LATEST INSPECTION DETAILS
+             ===================================================== -->
+
+        <section class="card latest-card">
+
+            <div class="card-header">
+
+                <div>
+
+                    <h2>
+                        Latest inspection
+                    </h2>
+
+                    <p>
+                        Detailed results from the most recently completed inspection.
+                    </p>
+
+                </div>
+
+
+                @if (latestInspection != null)
+                {
+                    <span class="result @(latestInspection.IsOk ? "result-ok" : "result-warning")">
+
+                        @(latestInspection.IsOk ? "Passed" : "Issues found")
+
+                    </span>
+                }
+
+            </div>
+
+
+            @if (latestInspection == null)
+            {
+                <div class="empty">
+
+                    <div class="empty-icon">
+                        —
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            No inspection data
+                        </strong>
+
+                        <p>
+                            Perform an inspection to see detailed results here.
+                        </p>
+
+                    </div>
+
+                </div>
+            }
+            else
+            {
+                <div class="latest-content">
+
+                    <!-- INSPECTION SUMMARY -->
+
+                    <div class="latest-summary">
+
+                        <div class="latest-room-icon">
+                            ▦
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                @(latestInspection.ServerRoom?.Name ?? "Unknown room")
+                            </strong>
+
+                            <span>
+                                @(latestInspection.Technician?.UserName ?? "Unknown technician")
+                            </span>
+
+                            <small>
+                                @latestInspection.CheckedAt.ToString("dd MMMM yyyy · HH:mm")
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- CHECKS -->
+
+                    <div class="checks-grid">
+
+                        <!-- TEMPERATURE -->
+
+                        <div class="check">
+
+                            <div class="check-icon @(latestInspection.TemperatureOk ? "check-good" : "check-bad")">
+
+                                @(latestInspection.TemperatureOk ? "✓" : "!")
+
+                            </div>
+
+                            <div>
+
+                                <span>
+                                    Temperature
+                                </span>
+
+                                <strong>
+                                    @latestInspection.Temperature.ToString("0.0")°C
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- AIR CONDITIONING -->
+
+                        <div class="check">
+
+                            <div class="check-icon @(latestInspection.AirConditioningOk ? "check-good" : "check-bad")">
+
+                                @(latestInspection.AirConditioningOk ? "✓" : "!")
+
+                            </div>
+
+                            <div>
+
+                                <span>
+                                    Air conditioning
+                                </span>
+
+                                <strong>
+                                    @(latestInspection.AirConditioningOk ? "OK" : "Issue")
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- OVERHEATING -->
+
+                        <div class="check">
+
+                            <div class="check-icon @(latestInspection.NoOverheatingAlarm ? "check-good" : "check-bad")">
+
+                                @(latestInspection.NoOverheatingAlarm ? "✓" : "!")
+
+                            </div>
+
+                            <div>
+
+                                <span>
+                                    Overheating alarm
+                                </span>
+
+                                <strong>
+                                    @(latestInspection.NoOverheatingAlarm ? "Clear" : "Alarm")
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- WATER LEAK -->
+
+                        <div class="check">
+
+                            <div class="check-icon @(latestInspection.NoWaterLeak ? "check-good" : "check-bad")">
+
+                                @(latestInspection.NoWaterLeak ? "✓" : "!")
+
+                            </div>
+
+                            <div>
+
+                                <span>
+                                    Water leak
+                                </span>
+
+                                <strong>
+                                    @(latestInspection.NoWaterLeak
+                                        ? "None detected"
+                                        : "Detected")
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- POWER -->
+
+                        <div class="check">
+
+                            <div class="check-icon @(latestInspection.PowerOk ? "check-good" : "check-bad")">
+
+                                @(latestInspection.PowerOk ? "✓" : "!")
+
+                            </div>
+
+                            <div>
+
+                                <span>
+                                    Power
+                                </span>
+
+                                <strong>
+                                    @(latestInspection.PowerOk ? "OK" : "Issue")
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ROOM CONDITION -->
+
+                        <div class="check">
+
+                            <div class="check-icon @(latestInspection.RoomClean ? "check-good" : "check-bad")">
+
+                                @(latestInspection.RoomClean ? "✓" : "!")
+
+                            </div>
+
+                            <div>
+
+                                <span>
+                                    Room condition
+                                </span>
+
+                                <strong>
+                                    @(latestInspection.RoomClean
+                                        ? "Clean"
+                                        : "Needs attention")
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- NOTES -->
+
+                    @if (!string.IsNullOrWhiteSpace(latestInspection.Notes))
+                    {
+                        <div class="inspection-notes">
+
+                            <span>
+                                Technician notes
+                            </span>
+
+                            <p>
+                                @latestInspection.Notes
+                            </p>
+
+                        </div>
+                    }
+
+                </div>
+            }
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<style>
+
+    * {
+        box-sizing: border-box;
+    }
+
+
+    /* =========================================================
+       DASHBOARD
+       ========================================================= */
+
+    .dashboard {
+        width: 100%;
+        min-height: 100vh;
+        background: #f5f6f9;
+        color: #252a30;
+
+        /* Pagination transition */
+        opacity: 1;
+        transition: opacity .18s ease;
+    }
+
+    .dashboard.page-loading {
+        opacity: .55;
+    }
+
+
+    .main {
+        width: 100%;
+        padding: 38px 42px 60px;
+    }
+
+
+    /* =========================================================
+       HEADER
+       ========================================================= */
+
+    .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 28px;
+    }
+
+
+    .eyebrow {
+        color: #9299a1;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+    }
+
+
+    .top h1 {
+        margin: 6px 0 4px;
+        font-size: 32px;
+        letter-spacing: -.5px;
+    }
+
+
+    .top p {
+        margin: 0;
+        color: #858d96;
+        font-size: 13px;
+    }
+
+
+    .add-button {
+        background: #20252b;
+        color: white;
+        padding: 11px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 600;
+        transition: .15s ease;
+    }
+
+
+    .add-button:hover {
+        background: #343a40;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+
+    /* =========================================================
+       STAT CARDS
+       ========================================================= */
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 22px;
+    }
+
+
+    .stat {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: .15s ease;
+    }
+
+
+    .stat:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(32, 37, 43, .05);
+    }
+
+
+    .stat-icon {
+        width: 43px;
+        height: 43px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+
+    .blue {
+        background: #edf3fb;
+        color: #3974b9;
+    }
+
+
+    .green {
+        color: #328052;
+    }
+
+
+    .red {
+        color: #bd4a4a;
+    }
+
+
+    .orange {
+        color: #ad7820;
+    }
+
+
+    .stat-icon.green {
+        background: #eaf5ee;
+    }
+
+
+    .stat-icon.red {
+        background: #faeeee;
+    }
+
+
+    .stat-icon.orange {
+        background: #faf3e5;
+    }
+
+
+    .stat span {
+        display: block;
+        color: #858d96;
+        font-size: 11px;
+    }
+
+
+    .stat strong {
+        display: block;
+        margin-top: 5px;
+        font-size: 27px;
+    }
+
+
+    /* =========================================================
+       MAIN GRID
+       ========================================================= */
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.7fr) minmax(300px, .8fr);
+        gap: 22px;
+        align-items: stretch;
+        margin-bottom: 22px;
+    }
+
+
+    /* =========================================================
+       CARDS
+       ========================================================= */
+
+    .card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+
+    .card-header {
+        padding: 20px 22px;
+        border-bottom: 1px solid #edf0f2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 16px;
+    }
+
+
+    .card-header p {
+        margin: 4px 0 0;
+        color: #969da5;
+        font-size: 11px;
+    }
+
+
+    .count-badge {
+        min-width: 30px;
+        height: 30px;
+        padding: 0 9px;
+        border-radius: 50%;
+        background: #f0f2f4;
+        color: #68717a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+
+    /* =========================================================
+       INSPECTION LIST
+       ========================================================= */
+
+    .inspection-list {
+        transition: opacity .18s ease, transform .18s ease;
+    }
+
+
+    .inspection-list.page-changing {
+        opacity: .35;
+        transform: translateY(4px);
+    }
+
+
+    .inspection-row {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 16px 22px;
+        border-bottom: 1px solid #edf0f2;
+        transition: .15s ease;
+    }
+
+
+    .inspection-row:last-child {
+        border-bottom: none;
+    }
+
+
+    .inspection-row:hover {
+        background: #fafbfc;
+    }
+
+
+    .inspection-status {
+        width: 35px;
+        height: 35px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+
+    .status-ok {
+        background: #eaf5ee;
+        color: #328052;
+    }
+
+
+    .status-warning {
+        background: #faeeee;
+        color: #bd4a4a;
+    }
+
+
+    .inspection-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+
+    .inspection-info strong {
+        display: block;
+        color: #30363c;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+
+    .inspection-info .technician {
+        display: block;
+        margin-top: 4px;
+        color: #9299a1;
+        font-size: 10px;
+    }
+
+
+    .inspection-info .technician b {
+        color: #68717a;
+        font-weight: 600;
+    }
+
+
+    /* =========================================================
+       TEMPERATURE
+       ========================================================= */
+
+    .inspection-temperature {
+        width: 85px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+
+    .inspection-temperature span {
+        display: block;
+        color: #9ba2aa;
+        font-size: 9px;
+    }
+
+
+    .inspection-temperature strong {
+        display: block;
+        margin-top: 3px;
+        font-size: 12px;
+    }
+
+
+    .temperature-ok {
+        color: #328052;
+    }
+
+
+    .temperature-warning {
+        color: #bd4a4a;
+    }
+
+
+    /* =========================================================
+       RESULT
+       ========================================================= */
+
+    .inspection-result {
+        width: 110px;
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+
+    .result {
+        display: inline-block;
+        padding: 5px 8px;
+        border-radius: 6px;
+        font-size: 9px;
+        font-weight: 700;
+    }
+
+
+    .result-ok {
+        background: #eaf5ee;
+        color: #328052;
+    }
+
+
+    .result-warning {
+        background: #faeeee;
+        color: #bd4a4a;
+    }
+
+
+    .inspection-result small {
+        display: block;
+        margin-top: 5px;
+        color: #9ba2aa;
+        font-size: 9px;
+    }
+
+
+    /* =========================================================
+       PAGINATION
+       ========================================================= */
+
+    .pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        border-top: 1px solid #edf0f2;
+        background: #fafbfc;
+    }
+
+
+    .pagination-info {
+        color: #9299a1;
+        font-size: 10px;
+    }
+
+
+    .pagination-info strong {
+        color: #68717a;
+        font-weight: 600;
+    }
+
+
+    .pagination-buttons {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+
+    .page-button {
+        min-width: 29px;
+        height: 29px;
+        padding: 0 8px;
+        border: 1px solid #e1e4e7;
+        border-radius: 6px;
+        background: white;
+        color: #68717a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        font-size: 10px;
+        font-weight: 600;
+        transition: .15s ease;
+    }
+
+
+    .page-button:hover {
+        background: #f0f2f4;
+        color: #30363c;
+    }
+
+
+    .page-button.active {
+        background: #20252b;
+        border-color: #20252b;
+        color: white;
+    }
+
+
+    .page-button.disabled {
+        opacity: .4;
+        cursor: default;
+    }
+
+
+    /* =========================================================
+       EMPTY
+       ========================================================= */
+
+    .empty {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 40px 22px;
+    }
+
+
+    .empty-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #f0f2f4;
+        color: #8b939b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+
+    .empty strong {
+        font-size: 13px;
+    }
+
+
+    .empty p {
+        margin: 4px 0 0;
+        color: #9299a1;
+        font-size: 11px;
+    }
+
+
+    /* =========================================================
+       ACTIVITY
+       ========================================================= */
+
+    .activity-content {
+        padding: 22px;
+    }
+
+
+    .activity-main {
+        padding-bottom: 20px;
+    }
+
+
+    .activity-label {
+        display: block;
+        color: #9299a1;
+        font-size: 10px;
+    }
+
+
+    .activity-main strong {
+        display: block;
+        margin-top: 5px;
+        font-size: 32px;
+        letter-spacing: -.5px;
+    }
+
+
+    .activity-description {
+        display: block;
+        margin-top: 2px;
+        color: #858d96;
+        font-size: 10px;
+    }
+
+
+    .activity-divider {
+        height: 1px;
+        background: #edf0f2;
+        margin-bottom: 18px;
+    }
+
+
+    .activity-stat {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        margin-bottom: 15px;
+    }
+
+
+    .activity-stat-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+
+    .activity-stat-icon.green {
+        background: #eaf5ee;
+    }
+
+
+    .activity-stat-icon.red {
+        background: #faeeee;
+    }
+
+
+    .activity-stat strong,
+    .activity-stat span {
+        display: block;
+    }
+
+
+    .activity-stat strong {
+        font-size: 14px;
+    }
+
+
+    .activity-stat span {
+        margin-top: 2px;
+        color: #9299a1;
+        font-size: 10px;
+    }
+
+
+    .last-inspection {
+        margin-top: 20px;
+        padding-top: 18px;
+        border-top: 1px solid #edf0f2;
+    }
+
+
+    .last-inspection strong {
+        display: block;
+        margin-top: 5px;
+        font-size: 14px;
+    }
+
+
+    .last-inspection span:last-child {
+        display: block;
+        margin-top: 3px;
+        color: #858d96;
+        font-size: 10px;
+    }
+
+
+    /* =========================================================
+       LATEST INSPECTION
+       ========================================================= */
+
+    .latest-card {
+        margin-bottom: 22px;
+    }
+
+
+    .latest-content {
+        padding: 22px;
+    }
+
+
+    .latest-summary {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding-bottom: 22px;
+        border-bottom: 1px solid #edf0f2;
+    }
+
+
+    .latest-room-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 11px;
+        background: #edf3fb;
+        color: #3974b9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+
+    .latest-summary strong,
+    .latest-summary span,
+    .latest-summary small {
+        display: block;
+    }
+
+
+    .latest-summary strong {
+        font-size: 14px;
+    }
+
+
+    .latest-summary span {
+        margin-top: 4px;
+        color: #68717a;
+        font-size: 11px;
+    }
+
+
+    .latest-summary small {
+        margin-top: 4px;
+        color: #9ba2aa;
+        font-size: 10px;
+    }
+
+
+    /* =========================================================
+       CHECKS
+       ========================================================= */
+
+    .checks-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        padding-top: 20px;
+    }
+
+
+    .check {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 13px;
+        background: #fafbfc;
+        border: 1px solid #edf0f2;
+        border-radius: 9px;
+    }
+
+
+    .check-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+
+    .check-good {
+        background: #eaf5ee;
+        color: #328052;
+    }
+
+
+    .check-bad {
+        background: #faeeee;
+        color: #bd4a4a;
+    }
+
+
+    .check span,
+    .check strong {
+        display: block;
+    }
+
+
+    .check span {
+        color: #9299a1;
+        font-size: 9px;
+    }
+
+
+    .check strong {
+        margin-top: 3px;
+        color: #363d44;
+        font-size: 11px;
+    }
+
+
+    /* =========================================================
+       NOTES
+       ========================================================= */
+
+    .inspection-notes {
+        margin-top: 18px;
+        padding: 16px;
+        background: #fafbfc;
+        border: 1px solid #edf0f2;
+        border-radius: 9px;
+    }
+
+
+    .inspection-notes span {
+        color: #9299a1;
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .7px;
+    }
+
+
+    .inspection-notes p {
+        margin: 7px 0 0;
+        color: #68717a;
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+
+    @@media (max-width: 1100px) {
+
+        .main {
+            padding: 30px 25px;
+        }
+
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .checks-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+    }
+
+
+    @@media (max-width: 900px) {
+
+        .stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+    }
+
+
+    @@media (max-width: 700px) {
+
+        .main {
+            padding: 25px 18px 40px;
+        }
+
+        .top {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .add-button {
+            width: 100%;
+            text-align: center;
+        }
+
+        .stats {
+            grid-template-columns: 1fr;
+        }
+
+        .inspection-row {
+            padding: 14px 16px;
+        }
+
+        .inspection-temperature {
+            display: none;
+        }
+
+        .inspection-result {
+            width: auto;
+        }
+
+        .checks-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .card-header {
+            padding: 17px;
+        }
+
+        .pagination {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .pagination-buttons {
+            width: 100%;
+            justify-content: center;
+        }
+
+    }
+
+</style>
+
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        /*
+         * =====================================================
+         * RESTORE SCROLL POSITION
+         * =====================================================
+         *
+         * When the user changes pagination, the browser normally
+         * reloads the Razor Page and starts again at the top.
+         *
+         * We save the current scroll position before navigating
+         * and restore it after the new page has loaded.
+         */
+
+        const savedScroll = sessionStorage.getItem("dashboardScroll");
+
+        if (savedScroll !== null) {
+
+            const scrollPosition = parseInt(savedScroll, 10);
+
+            /*
+             * Wait until the page has finished rendering before
+             * restoring the position.
+             */
+            requestAnimationFrame(function () {
+
+                window.scrollTo({
+                    top: scrollPosition,
+                    behavior: "instant"
+                });
+
+            });
+
+            sessionStorage.removeItem("dashboardScroll");
+        }
+
+
+        /*
+         * =====================================================
+         * PAGINATION CLICK
+         * =====================================================
+         */
+
+        const paginationLinks = document.querySelectorAll(
+            ".pagination-buttons a.page-button"
+        );
+
+
+        paginationLinks.forEach(function (link) {
+
+            link.addEventListener("click", function () {
+
+                /*
+                 * Save the exact position where the user clicked.
+                 */
+                sessionStorage.setItem(
+                    "dashboardScroll",
+                    window.scrollY.toString()
+                );
+
+
+                /*
+                 * Add a subtle fade while the next page loads.
+                 */
+                const dashboard = document.querySelector(".dashboard");
+
+                if (dashboard) {
+                    dashboard.classList.add("page-loading");
+                }
+
+
+                /*
+                 * Slightly fade/move the inspection list.
+                 */
+                const inspectionList =
+                    document.querySelector(".inspection-list");
+
+                if (inspectionList) {
+                    inspectionList.classList.add("page-changing");
+                }
+
+            });
+
+        });
+
+    });
+
+</script>
+

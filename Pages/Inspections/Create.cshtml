@@ -1,0 +1,219 @@
+@page
+@model ServerRoomMonitor.Pages.Inspections.CreateModel
+
+@{
+    ViewData["Title"] = "Scheduled Inspection";
+}
+
+<div class="container mt-4">
+
+    <h1>Scheduled Inspection</h1>
+
+    <div class="card mb-4">
+        <div class="card-body">
+
+            <h5 class="card-title">
+                @Model.ServerRoom.Name
+            </h5>
+
+            <p class="text-muted mb-2">
+                Location: @Model.ServerRoom.Location
+            </p>
+
+            <div class="row">
+
+                <div class="col-md-4">
+                    <strong>Attempt:</strong>
+                    @Model.Inspection.AttemptNumber / 3
+                </div>
+
+                <div class="col-md-4">
+                    <strong>Scheduled:</strong>
+                    @Model.ScheduledInspection.ScheduledAt.ToString("dd/MM/yyyy HH:mm")
+                </div>
+
+                <div class="col-md-4">
+                    <strong>Deadline:</strong>
+                    @Model.ScheduledInspection.Deadline.ToString("dd/MM/yyyy HH:mm")
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        You are authorized to perform this inspection because it was scheduled
+        by an administrator.
+        This is attempt
+        <strong>@Model.Inspection.AttemptNumber of 3</strong>.
+    </div>
+
+    <div asp-validation-summary="ModelOnly"
+         class="text-danger mb-3">
+    </div>
+
+    <form method="post" class="mt-4">
+
+        <!-- These identify the scheduled inspection.
+             The server validates them again on POST. -->
+        <input type="hidden"
+               asp-for="Inspection.ScheduledInspectionId" />
+
+        <input type="hidden"
+               asp-for="Inspection.ServerRoomId" />
+
+        <!-- Temperature -->
+        <div class="card mb-4">
+
+            <div class="card-body">
+
+                <h5 class="card-title">
+                    Temperature
+                </h5>
+
+                <div class="mb-3">
+
+                    <label asp-for="Inspection.Temperature"
+                           class="form-label">
+                        Temperature (°C)
+                    </label>
+
+                    <input asp-for="Inspection.Temperature"
+                           class="form-control"
+                           type="number"
+                           step="0.1"
+                           required />
+
+                    <span asp-validation-for="Inspection.Temperature"
+                          class="text-danger">
+                    </span>
+
+                    <small class="text-muted">
+                        Acceptable range: 18°C - 27°C
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Equipment checks -->
+        <div class="card mb-4">
+
+            <div class="card-body">
+
+                <h5 class="card-title">
+                    Equipment &amp; Safety Checks
+                </h5>
+
+                <div class="form-check mb-3">
+
+                    <input asp-for="Inspection.AirConditioningOk"
+                           class="form-check-input" />
+
+                    <label asp-for="Inspection.AirConditioningOk"
+                           class="form-check-label">
+                        Air conditioning is working correctly
+                    </label>
+
+                </div>
+
+                <div class="form-check mb-3">
+
+                    <input asp-for="Inspection.NoOverheatingAlarm"
+                           class="form-check-input" />
+
+                    <label asp-for="Inspection.NoOverheatingAlarm"
+                           class="form-check-label">
+                        No overheating alarms are active
+                    </label>
+
+                </div>
+
+                <div class="form-check mb-3">
+
+                    <input asp-for="Inspection.NoWaterLeak"
+                           class="form-check-input" />
+
+                    <label asp-for="Inspection.NoWaterLeak"
+                           class="form-check-label">
+                        No water leaks are present
+                    </label>
+
+                </div>
+
+                <div class="form-check mb-3">
+
+                    <input asp-for="Inspection.PowerOk"
+                           class="form-check-input" />
+
+                    <label asp-for="Inspection.PowerOk"
+                           class="form-check-label">
+                        Power and electrical equipment are working correctly
+                    </label>
+
+                </div>
+
+                <div class="form-check">
+
+                    <input asp-for="Inspection.RoomClean"
+                           class="form-check-input" />
+
+                    <label asp-for="Inspection.RoomClean"
+                           class="form-check-label">
+                        Server room is clean and unobstructed
+                    </label>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Notes -->
+        <div class="card mb-4">
+
+            <div class="card-body">
+
+                <h5 class="card-title">
+                    Technician Notes
+                </h5>
+
+                <div class="mb-3">
+
+                    <label asp-for="Inspection.Notes"
+                           class="form-label">
+                        Notes
+                    </label>
+
+                    <textarea asp-for="Inspection.Notes"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Describe any problems or observations...">
+                    </textarea>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <button type="submit"
+                class="btn btn-primary">
+            Submit Inspection
+        </button>
+
+        <a asp-page="/Inspections/Index"
+           class="btn btn-secondary">
+            Cancel
+        </a>
+
+    </form>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

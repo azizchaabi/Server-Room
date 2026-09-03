@@ -1,0 +1,491 @@
+@page
+
+@model ServerRoomMonitor.Pages.Admin.Inspections.IndexModel
+
+@{
+ViewData["Title"] = "Inspection Scheduling";
+}
+
+<div class="container mt-4">
+
+
+<div class="mb-4">
+    <h1>Inspection Scheduling</h1>
+
+    <p class="text-muted">
+        Schedule inspections and assign them to technicians.
+    </p>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div asp-validation-summary="ModelOnly"
+     class="alert alert-danger">
+</div>
+
+
+<!-- Schedule inspection -->
+
+<div class="card shadow-sm mb-4">
+
+    <div class="card-header">
+        <h4 class="mb-0">
+            Schedule New Inspection
+        </h4>
+    </div>
+
+    <div class="card-body">
+
+        <form method="post"
+              asp-page-handler="Schedule">
+
+            <div class="row">
+
+                <!-- Server Room -->
+
+                <div class="col-md-6 mb-3">
+
+                    <label asp-for="ServerRoomId"
+                           class="form-label">
+                        Server Room
+                    </label>
+
+                    <select asp-for="ServerRoomId"
+                            class="form-select">
+
+                        <option value="">
+                            Select a server room
+                        </option>
+
+                        @foreach (var room in Model.ServerRooms)
+                        {
+                            <option value="@room.Id">
+                                @room.Name - @room.Location
+                            </option>
+                        }
+
+                    </select>
+
+                    <span asp-validation-for="ServerRoomId"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- Technician -->
+
+                <div class="col-md-6 mb-3">
+
+                    <label asp-for="TechnicianId"
+                           class="form-label">
+                        Technician
+                    </label>
+
+                    <select asp-for="TechnicianId"
+                            class="form-select">
+
+                        <option value="">
+                            Select a technician
+                        </option>
+
+                        @foreach (var technician in Model.Technicians)
+                        {
+                            <option value="@technician.Id">
+                                @(technician.UserName ?? technician.Email)
+                            </option>
+                        }
+
+                    </select>
+
+                    <span asp-validation-for="TechnicianId"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="row">
+
+                <!-- Scheduled date/time -->
+
+                <div class="col-md-6 mb-3">
+
+                    <label asp-for="ScheduledAt"
+                           class="form-label">
+                        Date and Time
+                    </label>
+
+                    <input asp-for="ScheduledAt"
+                           type="datetime-local"
+                           step="60"
+                           class="form-control" />
+
+                    <span asp-validation-for="ScheduledAt"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- Deadline -->
+
+                <div class="col-md-6 mb-3">
+
+                    <label asp-for="Deadline"
+                           class="form-label">
+                        Deadline
+                    </label>
+
+                    <input asp-for="Deadline"
+                           type="datetime-local"
+                           step="60"
+                           class="form-control" />
+
+                    <span asp-validation-for="Deadline"
+                          class="text-danger">
+                    </span>
+
+                    <small class="text-muted">
+                        The technician must complete the inspection before this time.
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <div class="row">
+
+                <!-- Notes -->
+
+                <div class="col-md-12 mb-3">
+
+                    <label asp-for="Notes"
+                           class="form-label">
+                        Notes
+                    </label>
+
+                    <textarea asp-for="Notes"
+                              class="form-control"
+                              rows="3"
+                              placeholder="Optional notes...">
+                    </textarea>
+
+                </div>
+
+            </div>
+
+
+            <button type="submit"
+                    class="btn btn-primary">
+
+                Schedule Inspection
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- Scheduled inspections -->
+
+<div class="card shadow-sm">
+
+    <div class="card-header">
+        <h4 class="mb-0">
+            Scheduled Inspections
+        </h4>
+    </div>
+
+    <div class="card-body">
+
+        @if (!Model.ScheduledInspections.Any())
+        {
+            <div class="alert alert-info mb-0">
+                No inspections have been scheduled yet.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th>Server Room</th>
+
+                            <th>Technician</th>
+
+                            <th>Scheduled</th>
+
+                            <th>Deadline</th>
+
+                            <th>Attempts</th>
+
+                            <th>Status</th>
+
+                            <th>Notes</th>
+
+                            <th>Actions</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var inspection in Model.ScheduledInspections)
+                        {
+                            <tr>
+
+                                <!-- Server room -->
+
+                                <td>
+
+                                    <strong>
+                                        @inspection.ServerRoom?.Name
+                                    </strong>
+
+                                    <br />
+
+                                    <small class="text-muted">
+                                        @inspection.ServerRoom?.Location
+                                    </small>
+
+                                </td>
+
+
+                                <!-- Technician -->
+
+                                <td>
+
+                                    @(inspection.Technician?.UserName
+                                        ?? inspection.Technician?.Email
+                                        ?? "Not assigned")
+
+                                </td>
+
+
+                                <!-- Scheduled date -->
+
+                                <td>
+
+                                    @inspection.ScheduledAt.ToString(
+                                        "dd/MM/yyyy HH:mm")
+
+                                </td>
+
+
+                                <!-- Deadline -->
+
+                                <td>
+
+                                    @inspection.Deadline.ToString(
+                                        "dd/MM/yyyy HH:mm")
+
+                                    @if (
+                                        inspection.Status != "Completed" &&
+                                        inspection.Status != "Cancelled" &&
+                                        DateTime.Now > inspection.Deadline)
+                                    {
+                                        <br />
+
+                                        <small class="text-danger">
+                                            Deadline passed
+                                        </small>
+                                    }
+
+                                </td>
+
+
+                                <!-- Attempts -->
+
+                                <td>
+
+                                    <span class="badge bg-light text-dark border">
+
+                                        @inspection.AttemptCount / 3
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- Status -->
+
+                                <td>
+
+                                    @if (inspection.Status == "Scheduled")
+                                    {
+                                        <span class="badge bg-primary">
+                                            Scheduled
+                                        </span>
+                                    }
+                                    else if (inspection.Status == "In Progress")
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            In Progress
+                                        </span>
+                                    }
+                                    else if (inspection.Status == "Completed")
+                                    {
+                                        <span class="badge bg-success">
+                                            Completed
+                                        </span>
+                                    }
+                                    else if (inspection.Status == "Cancelled")
+                                    {
+                                        <span class="badge bg-secondary">
+                                            Cancelled
+                                        </span>
+                                    }
+                                    else if (inspection.Status == "Overdue")
+                                    {
+                                        <span class="badge bg-danger">
+                                            Overdue
+                                        </span>
+                                    }
+                                    else if (inspection.Status == "Requires Fix")
+                                    {
+                                        <span class="badge bg-danger">
+                                            Requires Fix
+                                        </span>
+                                    }
+                                    else if (inspection.Status == "Awaiting Verification")
+                                    {
+                                        <span class="badge bg-info text-dark">
+                                            Awaiting Verification
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            @inspection.Status
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- Notes -->
+
+                                <td>
+
+                                    @if (!string.IsNullOrWhiteSpace(
+                                        inspection.Notes))
+                                    {
+                                        @inspection.Notes
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            —
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- Actions -->
+
+                                <td>
+
+                                    <div class="d-flex gap-2 flex-wrap">
+
+                                        @if (inspection.Status == "Requires Fix")
+                                        {
+                                            <form method="post"
+                                                  asp-page-handler="MarkFixed"
+                                                  asp-route-id="@inspection.Id"
+                                                  onsubmit="return confirm('Confirm that the server room has been fixed and is ready for technician verification?');">
+
+                                                <button type="submit"
+                                                        class="btn btn-success btn-sm">
+
+                                                    Mark as Fixed
+
+                                                </button>
+
+                                            </form>
+                                        }
+
+
+                                        @if (inspection.Status != "Completed" &&
+                                             inspection.Status != "Cancelled" &&
+                                             inspection.Status != "Awaiting Verification")
+                                        {
+                                            <form method="post"
+                                                  asp-page-handler="Cancel"
+                                                  asp-route-id="@inspection.Id"
+                                                  onsubmit="return confirm('Are you sure you want to cancel this inspection?');">
+
+                                                <button type="submit"
+                                                        class="btn btn-outline-danger btn-sm">
+
+                                                    Cancel
+
+                                                </button>
+
+                                            </form>
+                                        }
+
+                                        @if (inspection.Status == "Awaiting Verification")
+                                        {
+                                            <span class="badge bg-info text-dark align-self-center">
+                                                Technician verification required
+                                            </span>
+                                        }
+
+                                        @if (inspection.Status == "Completed" ||
+                                             inspection.Status == "Cancelled")
+                                        {
+                                            <span class="text-muted">
+                                                —
+                                            </span>
+                                        }
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+
+    </div>
+
+</div>
+
+
+</div>
+
+@section Scripts
+{ <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,54 @@
+@page
+@model ServerRoomMonitor.Pages.ServerRooms.EditModel
+
+@{
+    ViewData["Title"] = "Edit Server Room";
+}
+
+<div class="container mt-4">
+
+    <h1>Edit Server Room</h1>
+
+    <form method="post" class="mt-4">
+
+        <input type="hidden" asp-for="ServerRoom.Id" />
+
+        <div class="mb-3">
+            <label asp-for="ServerRoom.Name" class="form-label">
+                Server Room Name
+            </label>
+
+            <input asp-for="ServerRoom.Name"
+                   class="form-control" />
+
+            <span asp-validation-for="ServerRoom.Name"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ServerRoom.Location" class="form-label">
+                Location
+            </label>
+
+            <input asp-for="ServerRoom.Location"
+                   class="form-control" />
+
+            <span asp-validation-for="ServerRoom.Location"
+                  class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Save Changes
+        </button>
+
+        <a asp-page="Index" class="btn btn-secondary">
+            Cancel
+        </a>
+
+    </form>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

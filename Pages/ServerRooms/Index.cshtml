@@ -1,0 +1,838 @@
+@page
+
+@model ServerRoomMonitor.Pages.ServerRooms.IndexModel
+
+@{
+ViewData["Title"] = "Server Rooms";
+}
+
+<div class="server-rooms-page">
+
+
+<!-- =========================================================
+     HEADER
+     ========================================================= -->
+
+<div class="page-header">
+
+    <div>
+
+        <div class="page-eyebrow">
+            INFRASTRUCTURE
+        </div>
+
+        <h1>
+            Server Rooms
+        </h1>
+
+        <p>
+            Manage and monitor your server room infrastructure.
+        </p>
+
+    </div>
+
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-page="/ServerRooms/Create"
+           class="primary-button">
+
+            <span>+</span>
+
+            Add Server Room
+
+        </a>
+    }
+
+</div>
+
+
+<!-- =========================================================
+     SUMMARY
+     ========================================================= -->
+
+
+
+
+<!-- =========================================================
+     SERVER ROOMS
+     ========================================================= -->
+
+<section class="rooms-section">
+
+    <div class="section-header">
+
+        <div>
+
+            <div class="section-eyebrow">
+                SERVER INFRASTRUCTURE
+            </div>
+
+            <h2>
+                Available Server Rooms
+            </h2>
+
+            <p>
+                Select a server room to view inspection history.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    @if (!Model.ServerRooms.Any())
+    {
+        <!-- =================================================
+             EMPTY STATE
+             ================================================= -->
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                ▦
+            </div>
+
+            <h3>
+                No server rooms
+            </h3>
+
+            <p>
+                No server rooms have been added yet.
+            </p>
+
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-page="/ServerRooms/Create"
+                   class="primary-button empty-action">
+
+                    Add Server Room
+
+                </a>
+            }
+
+        </div>
+    }
+    else
+    {
+        <!-- =================================================
+             ROOM GRID
+             ================================================= -->
+
+        <div class="rooms-grid">
+
+            @foreach (var room in Model.ServerRooms)
+            {
+                <article class="room-card">
+
+                    <!-- ROOM HEADER -->
+
+                    <div class="room-card-header">
+
+                        <div class="room-icon">
+                            ▦
+                        </div>
+
+                        <div class="room-title">
+
+                            <h3>
+                                @room.Name
+                            </h3>
+
+                            <span>
+                                @room.Location
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ROOM INFORMATION -->
+
+                    <div class="room-body">
+
+                        <div class="info-row">
+
+                            <span class="info-label">
+                                LOCATION
+                            </span>
+
+                            <span class="info-value">
+                                @room.Location
+                            </span>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <span class="info-label">
+                                ROOM ID
+                            </span>
+
+                            <span class="info-value">
+                                #@room.Id
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ACTIONS -->
+
+                    <div class="room-actions">
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a asp-page="/Inspections/Index"
+                               asp-route-serverRoomId="@room.Id"
+                               class="secondary-button">
+
+                                View Inspections
+
+                            </a>
+
+                            <a asp-page="/ServerRooms/Edit"
+                               asp-route-id="@room.Id"
+                               class="secondary-button">
+
+                                Edit
+
+                            </a>
+
+                            <a asp-page="/ServerRooms/Delete"
+                               asp-route-id="@room.Id"
+                               class="danger-button">
+
+                                Delete
+
+                            </a>
+                        }
+
+
+                        @if (User.IsInRole("Technician"))
+                        {
+                            <a asp-page="/Inspections/Index"
+                               asp-route-serverRoomId="@room.Id"
+                               class="secondary-button">
+
+                                Inspection History
+
+                            </a>
+                        }
+
+                    </div>
+
+                </article>
+            }
+
+        </div>
+
+
+        <!-- =================================================
+             PAGINATION
+             ================================================= -->
+
+        @if (Model.TotalPages > 1)
+{ <div class="pagination">
+
+
+    <!-- PREVIOUS -->
+    @if (Model.PageNumber > 1)
+    {
+        <a asp-page="./Index"
+           asp-route-pageNumber="@(Model.PageNumber - 1)"
+           class="pagination-button">
+            ←
+        </a>
+    }
+    else
+    {
+        <span class="pagination-button pagination-disabled">
+            ←
+        </span>
+    }
+
+    <!-- PAGE NUMBERS -->
+    @for (int i = 1; i <= Model.TotalPages; i++)
+    {
+        if (i == Model.PageNumber)
+        {
+            <span class="pagination-button pagination-current">
+                @i
+            </span>
+        }
+        else
+        {
+            <a asp-page="./Index"
+               asp-route-pageNumber="@i"
+               class="pagination-button">
+                @i
+            </a>
+        }
+    }
+
+    <!-- NEXT -->
+    @if (Model.PageNumber < Model.TotalPages)
+    {
+        <a asp-page="./Index"
+           asp-route-pageNumber="@(Model.PageNumber + 1)"
+           class="pagination-button">
+            →
+        </a>
+    }
+    else
+    {
+        <span class="pagination-button pagination-disabled">
+            →
+        </span>
+    }
+
+</div>
+
+<div class="pagination-info">
+    Page @Model.PageNumber
+    of
+    @Model.TotalPages
+
+    <span>·</span>
+
+    @Model.TotalRooms
+    total rooms
+</div>
+
+}
+
+
+    }
+
+</section>
+
+
+</div>
+
+<style>
+
+/* =========================================================
+   PAGE
+   ========================================================= */
+
+.server-rooms-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 42px 40px 60px;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 38px;
+}
+
+.page-eyebrow,
+.section-eyebrow {
+    color: #9299a1;
+    font-size: 9px;
+    font-weight: 750;
+    letter-spacing: 1.7px;
+    margin-bottom: 8px;
+}
+
+.page-header h1 {
+    margin: 0;
+    color: #20252b;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -.5px;
+}
+
+.page-header p {
+    margin: 9px 0 0;
+    color: #858d96;
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.primary-button,
+.secondary-button,
+.danger-button {
+    min-height: 34px;
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 7px;
+    text-decoration: none;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 650;
+    transition:
+        background .15s ease,
+        border-color .15s ease,
+        color .15s ease,
+        transform .15s ease;
+}
+
+.primary-button {
+    background: #20252b;
+    border: 1px solid #20252b;
+    color: #ffffff;
+}
+
+.primary-button:hover {
+    background: #30363c;
+    border-color: #30363c;
+    color: #ffffff;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.primary-button span {
+    font-size: 14px;
+    line-height: 1;
+}
+
+.secondary-button {
+    background: #ffffff;
+    border: 1px solid #dfe2e5;
+    color: #68717a;
+}
+
+.secondary-button:hover {
+    background: #f5f6f8;
+    border-color: #d5d9dd;
+    color: #30363c;
+    text-decoration: none;
+}
+
+.danger-button {
+    background: #ffffff;
+    border: 1px solid #eadada;
+    color: #b34a4a;
+}
+
+.danger-button:hover {
+    background: #fbf1f1;
+    border-color: #dfc2c2;
+    color: #a43d3d;
+    text-decoration: none;
+}
+
+
+/* =========================================================
+   SUMMARY
+   ========================================================= */
+
+.summary-row {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 38px;
+}
+
+.summary-card {
+    min-width: 180px;
+    padding: 14px 17px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
+    box-shadow: 0 2px 8px rgba(32, 37, 43, .025);
+}
+
+.summary-icon {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #f1f3f5;
+    color: #626b74;
+    font-size: 15px;
+}
+
+.summary-label {
+    color: #9aa1a9;
+    font-size: 8px;
+    font-weight: 750;
+    letter-spacing: 1.2px;
+}
+
+.summary-value {
+    margin-top: 3px;
+    color: #252a30;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   SECTION
+   ========================================================= */
+
+.rooms-section {
+    margin-top: 5px;
+}
+
+.section-header {
+    margin-bottom: 20px;
+}
+
+.section-header h2 {
+    margin: 0;
+    color: #252a30;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -.2px;
+}
+
+.section-header p {
+    margin: 6px 0 0;
+    color: #9299a1;
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   ROOM GRID
+   ========================================================= */
+
+.rooms-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+
+/* =========================================================
+   ROOM CARD
+   ========================================================= */
+
+.room-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 260px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 11px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(32, 37, 43, .025);
+    transition:
+        transform .15s ease,
+        box-shadow .15s ease,
+        border-color .15s ease;
+}
+
+.room-card:hover {
+    transform: translateY(-2px);
+    border-color: #d9dde1;
+    box-shadow: 0 7px 20px rgba(32, 37, 43, .07);
+}
+
+
+/* =========================================================
+   ROOM HEADER
+   ========================================================= */
+
+.room-card-header {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 20px;
+    border-bottom: 1px solid #f0f1f3;
+}
+
+.room-icon {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: #f1f3f5;
+    color: #626b74;
+    font-size: 17px;
+}
+
+.room-title {
+    min-width: 0;
+}
+
+.room-title h3 {
+    margin: 0;
+    color: #252a30;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.room-title span {
+    display: block;
+    margin-top: 4px;
+    color: #9299a1;
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   ROOM BODY
+   ========================================================= */
+
+.room-body {
+    padding: 18px 20px;
+    flex: 1;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f2f3f4;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: #a0a6ad;
+    font-size: 8px;
+    font-weight: 750;
+    letter-spacing: 1px;
+}
+
+.info-value {
+    max-width: 60%;
+    color: #626b74;
+    font-size: 10px;
+    font-weight: 600;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.room-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    padding: 15px 20px;
+    background: #fafbfc;
+    border-top: 1px solid #f0f1f3;
+}
+
+.room-actions .primary-button,
+.room-actions .secondary-button,
+.room-actions .danger-button {
+    flex: 1;
+}
+
+
+/* =========================================================
+   PAGINATION
+   ========================================================= */
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 28px;
+}
+
+.pagination-button {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    border: 1px solid #dfe2e5;
+    background: #ffffff;
+    color: #68717a;
+    font-size: 10px;
+    font-weight: 650;
+    text-decoration: none;
+    transition:
+        background .15s ease,
+        border-color .15s ease,
+        color .15s ease,
+        transform .15s ease;
+}
+
+.pagination-button:hover {
+    background: #f5f6f8;
+    border-color: #d5d9dd;
+    color: #30363c;
+    text-decoration: none;
+}
+
+.pagination-current {
+    background: #20252b;
+    border-color: #20252b;
+    color: #ffffff;
+}
+
+.pagination-current:hover {
+    background: #20252b;
+    border-color: #20252b;
+    color: #ffffff;
+    transform: none;
+}
+
+.pagination-disabled {
+    background: #f7f8f9;
+    border-color: #eceef0;
+    color: #c1c5c9;
+    cursor: not-allowed;
+}
+
+.pagination-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+    color: #9299a1;
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.empty-state {
+    padding: 60px 20px;
+    text-align: center;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 11px;
+}
+
+.empty-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #f1f3f5;
+    color: #8b939b;
+    font-size: 20px;
+}
+
+.empty-state h3 {
+    margin: 0;
+    color: #30363c;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.empty-state p {
+    margin: 6px 0 17px;
+    color: #9299a1;
+    font-size: 11px;
+}
+
+.empty-action {
+    display: inline-flex;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@@media (max-width: 1100px) {
+
+    .rooms-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+@@media (max-width: 750px) {
+
+    .server-rooms-page {
+        padding: 30px 20px 45px;
+    }
+
+    .page-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .page-header h1 {
+        font-size: 25px;
+    }
+
+    .summary-row {
+        flex-direction: column;
+    }
+
+    .summary-card {
+        width: 100%;
+    }
+
+    .rooms-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@@media (max-width: 500px) {
+
+    .server-rooms-page {
+        padding: 25px 15px 40px;
+    }
+
+    .room-actions {
+        flex-direction: column;
+    }
+
+    .room-actions .primary-button,
+    .room-actions .secondary-button,
+    .room-actions .danger-button {
+        width: 100%;
+    }
+
+    .pagination {
+        gap: 4px;
+    }
+
+    .pagination-button {
+        min-width: 30px;
+        padding: 0 7px;
+    }
+
+}
+</style>

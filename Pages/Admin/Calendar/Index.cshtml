@@ -1,0 +1,604 @@
+@page
+@model ServerRoomMonitor.Pages.Admin.Calendar.IndexModel
+
+@{
+    ViewData["Title"] = "Calendar";
+}
+
+<style>
+    .calendar-page {
+        padding: 24px;
+        max-width: 1500px;
+        margin: 0 auto;
+    }
+
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        gap: 20px;
+    }
+
+    .calendar-title h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .calendar-title p {
+        margin: 6px 0 0;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .calendar-container {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    #calendar {
+        min-height: 700px;
+    }
+
+    /* Calendar toolbar */
+
+    .fc .fc-toolbar-title {
+        font-size: 21px;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .fc .fc-button {
+        background: #2563eb;
+        border-color: #2563eb;
+        box-shadow: none;
+        font-size: 13px;
+    }
+
+    .fc .fc-button:hover {
+        background: #1d4ed8;
+        border-color: #1d4ed8;
+    }
+
+    .fc .fc-button:focus {
+        box-shadow: none;
+    }
+
+    .fc .fc-button.fc-button-active {
+        background: #1e40af;
+        border-color: #1e40af;
+    }
+
+    .fc .fc-today-button {
+        background: #374151;
+        border-color: #374151;
+    }
+
+    .fc .fc-daygrid-day-number {
+        color: #374151;
+        font-size: 13px;
+    }
+
+    .fc .fc-col-header-cell-cushion {
+        color: #4b5563;
+        font-weight: 600;
+        font-size: 13px;
+    }
+
+    .fc-event {
+        cursor: pointer;
+        border-radius: 5px;
+        padding: 2px 4px;
+        font-size: 12px;
+        border-width: 1px;
+    }
+
+    .fc-event-title {
+        font-weight: 600;
+    }
+
+    /* Legend */
+
+    .calendar-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 13px;
+        color: #4b5563;
+    }
+
+    .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+    }
+
+    /* Event details modal */
+
+    .event-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .event-modal-overlay.show {
+        display: flex;
+    }
+
+    .event-modal {
+        background: white;
+        width: 100%;
+        max-width: 500px;
+        border-radius: 12px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+    }
+
+    .event-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 20px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .event-modal-header h2 {
+        margin: 0;
+        font-size: 19px;
+        color: #111827;
+    }
+
+    .modal-close {
+        border: none;
+        background: transparent;
+        font-size: 25px;
+        color: #6b7280;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .modal-close:hover {
+        color: #111827;
+    }
+
+    .event-modal-body {
+        padding: 20px;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 11px 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .detail-value {
+        color: #111827;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: right;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 9px;
+        border-radius: 999px;
+        color: white;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .notes-box {
+        margin-top: 15px;
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 8px;
+        color: #374151;
+        font-size: 13px;
+        white-space: pre-wrap;
+    }
+
+    @@media (max-width: 768px) {
+        .calendar-page {
+            padding: 15px;
+        }
+
+        .calendar-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .calendar-container {
+            padding: 10px;
+        }
+
+        #calendar {
+            min-height: 600px;
+        }
+
+        .fc .fc-toolbar {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .fc .fc-toolbar-chunk {
+            display: flex;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="calendar-page">
+
+    <div class="calendar-header">
+
+        <div class="calendar-title">
+            <h1>Inspection Calendar</h1>
+            <p>View and manage scheduled server-room inspections.</p>
+        </div>
+
+    </div>
+
+    <div class="calendar-container">
+
+        <div id="calendar"></div>
+
+        <div class="calendar-legend">
+
+            <div class="legend-item">
+                <span class="legend-color" style="background:#2563eb;"></span>
+                Scheduled
+            </div>
+
+            <div class="legend-item">
+                <span class="legend-color" style="background:#f59e0b;"></span>
+                In Progress
+            </div>
+
+            <div class="legend-item">
+                <span class="legend-color" style="background:#7c3aed;"></span>
+                Awaiting Verification
+            </div>
+
+            <div class="legend-item">
+                <span class="legend-color" style="background:#16a34a;"></span>
+                Completed
+            </div>
+
+            <div class="legend-item">
+                <span class="legend-color" style="background:#dc2626;"></span>
+                Requires Fix
+            </div>
+
+            <div class="legend-item">
+                <span class="legend-color" style="background:#b91c1c;"></span>
+                Overdue
+            </div>
+
+            <div class="legend-item">
+                <span class="legend-color" style="background:#6b7280;"></span>
+                Cancelled
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Event details modal -->
+
+<div id="eventModal" class="event-modal-overlay">
+
+    <div class="event-modal">
+
+        <div class="event-modal-header">
+
+            <h2 id="modalRoomName">
+                Inspection Details
+            </h2>
+
+            <button type="button"
+                    class="modal-close"
+                    onclick="closeEventModal()">
+                ×
+            </button>
+
+        </div>
+
+        <div class="event-modal-body">
+
+            <div class="detail-row">
+                <span class="detail-label">
+                    Server Room
+                </span>
+
+                <span class="detail-value"
+                      id="modalRoom">
+                </span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">
+                    Technician
+                </span>
+
+                <span class="detail-value"
+                      id="modalTechnician">
+                </span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">
+                    Scheduled
+                </span>
+
+                <span class="detail-value"
+                      id="modalScheduled">
+                </span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">
+                    Deadline
+                </span>
+
+                <span class="detail-value"
+                      id="modalDeadline">
+                </span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">
+                    Status
+                </span>
+
+                <span class="detail-value">
+                    <span id="modalStatus"
+                          class="status-badge">
+                    </span>
+                </span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">
+                    Attempts
+                </span>
+
+                <span class="detail-value"
+                      id="modalAttempts">
+                </span>
+            </div>
+
+            <div id="modalNotesContainer">
+
+                <div class="detail-label">
+                    Notes
+                </div>
+
+                <div class="notes-box"
+                     id="modalNotes">
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <!-- FullCalendar -->
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js"></script>
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const calendarElement =
+                document.getElementById('calendar');
+
+            const calendar =
+                new FullCalendar.Calendar(calendarElement, {
+
+                    initialView: 'dayGridMonth',
+
+                    height: 'auto',
+
+                    firstDay: 1,
+
+                    nowIndicator: true,
+
+                    editable: false,
+
+                    selectable: false,
+
+                    eventDisplay: 'block',
+
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    },
+
+                    buttonText: {
+                        today: 'Today',
+                        month: 'Month',
+                        week: 'Week',
+                        day: 'Day'
+                    },
+
+                    events: {
+                        url: '@Url.Page("/Admin/Calendar/Index", "Events")',
+
+                        method: 'GET',
+
+                        failure: function () {
+
+                            alert(
+                                'Unable to load scheduled inspections.'
+                            );
+
+                        }
+                    },
+
+                    eventClick: function (info) {
+
+                        showEventDetails(info.event);
+
+                    },
+
+                    eventDidMount: function (info) {
+
+                        const props =
+                            info.event.extendedProps;
+
+                        info.el.title =
+                            props.roomName +
+                            ' - ' +
+                            props.technician +
+                            '\n' +
+                            props.scheduledAt +
+                            ' → ' +
+                            props.deadline;
+
+                    }
+
+                });
+
+            calendar.render();
+
+        });
+
+
+        function showEventDetails(event) {
+
+            const props =
+                event.extendedProps;
+
+            document.getElementById('modalRoomName')
+                .textContent =
+                props.roomName;
+
+            document.getElementById('modalRoom')
+                .textContent =
+                props.roomName;
+
+            document.getElementById('modalTechnician')
+                .textContent =
+                props.technician;
+
+            document.getElementById('modalScheduled')
+                .textContent =
+                props.scheduledAt;
+
+            document.getElementById('modalDeadline')
+                .textContent =
+                props.deadline;
+
+            document.getElementById('modalAttempts')
+                .textContent =
+                props.attempts + ' / 3';
+
+            const statusElement =
+                document.getElementById('modalStatus');
+
+            statusElement.textContent =
+                props.status;
+
+            statusElement.style.backgroundColor =
+                event.backgroundColor;
+
+            const notesContainer =
+                document.getElementById('modalNotesContainer');
+
+            const notesElement =
+                document.getElementById('modalNotes');
+
+            if (props.notes && props.notes.trim() !== '') {
+
+                notesElement.textContent =
+                    props.notes;
+
+                notesContainer.style.display =
+                    'block';
+
+            }
+            else {
+
+                notesContainer.style.display =
+                    'none';
+
+            }
+
+            document.getElementById('eventModal')
+                .classList.add('show');
+        }
+
+
+        function closeEventModal() {
+
+            document.getElementById('eventModal')
+                .classList.remove('show');
+
+        }
+
+
+        document.getElementById('eventModal')
+            .addEventListener('click', function (event) {
+
+                if (event.target === this) {
+
+                    closeEventModal();
+
+                }
+
+            });
+
+
+        document.addEventListener('keydown', function (event) {
+
+            if (event.key === 'Escape') {
+
+                closeEventModal();
+
+            }
+
+        });
+
+    </script>
+}
