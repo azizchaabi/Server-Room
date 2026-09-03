@@ -1,107 +1,129 @@
 ﻿@page
+
 @model RegisterModel
 
 @{
-    ViewData["Title"] = "Register";
+ViewData["Title"] = "Add User";
 }
 
-<h1>@ViewData["Title"]</h1>
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
 
-<div class="row">
-    <div class="col-md-4">
 
-        <form id="registerForm"
-              asp-route-returnUrl="@Model.ReturnUrl"
-              method="post">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
 
-            <h2>Create a new account.</h2>
+                <h1 class="mb-1">@ViewData["Title"]</h1>
 
-            <hr />
+                <p class="text-muted mb-4">
+                    Create a new user account and assign their role.
+                </p>
 
-            <div asp-validation-summary="ModelOnly"
-                 class="text-danger"
-                 role="alert">
+                <form method="post">
+
+                    <div asp-validation-summary="ModelOnly"
+                         class="text-danger mb-3"
+                         role="alert">
+                    </div>
+
+                    <!-- Email -->
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Email"
+                               class="form-control"
+                               autocomplete="off"
+                               placeholder="name@example.com" />
+
+                        <label asp-for="Input.Email">
+                            Email
+                        </label>
+
+                        <span asp-validation-for="Input.Email"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Password"
+                               class="form-control"
+                               autocomplete="new-password"
+                               placeholder="Password" />
+
+                        <label asp-for="Input.Password">
+                            Password
+                        </label>
+
+                        <span asp-validation-for="Input.Password"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.ConfirmPassword"
+                               class="form-control"
+                               autocomplete="new-password"
+                               placeholder="Confirm password" />
+
+                        <label asp-for="Input.ConfirmPassword">
+                            Confirm Password
+                        </label>
+
+                        <span asp-validation-for="Input.ConfirmPassword"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <!-- Role -->
+                    <div class="form-floating mb-4">
+                        <select asp-for="Input.Role"
+                                class="form-select">
+
+                            <option value="">
+                                Select a role
+                            </option>
+
+                            <option value="Technician">
+                                Technician
+                            </option>
+
+                            <option value="Admin">
+                                Admin
+                            </option>
+
+                        </select>
+
+                        <label asp-for="Input.Role">
+                            Role
+                        </label>
+
+                        <span asp-validation-for="Input.Role"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit"
+                                class="btn btn-primary flex-grow-1">
+                            Create User
+                        </button>
+
+                        <a asp-page="/Admin/Users/Index"
+                           class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+
+                </form>
+
             </div>
-
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Email"
-                       class="form-control"
-                       autocomplete="username"
-                       aria-required="true"
-                       placeholder="name@example.com" />
-
-                <label asp-for="Input.Email">
-                    Email
-                </label>
-
-                <span asp-validation-for="Input.Email"
-                      class="text-danger">
-                </span>
-            </div>
-
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Password"
-                       class="form-control"
-                       autocomplete="new-password"
-                       aria-required="true"
-                       placeholder="password" />
-
-                <label asp-for="Input.Password">
-                    Password
-                </label>
-
-                <span asp-validation-for="Input.Password"
-                      class="text-danger">
-                </span>
-            </div>
-
-            <div class="form-floating mb-3">
-                <input asp-for="Input.ConfirmPassword"
-                       class="form-control"
-                       autocomplete="new-password"
-                       aria-required="true"
-                       placeholder="password" />
-
-                <label asp-for="Input.ConfirmPassword">
-                    Confirm Password
-                </label>
-
-                <span asp-validation-for="Input.ConfirmPassword"
-                      class="text-danger">
-                </span>
-            </div>
-
-            <div class="form-floating mb-3">
-                <select asp-for="Input.Role"
-                        class="form-select"
-                        aria-required="true">
-
-                    <option value="">Select a role</option>
-                    <option value="Technician">Technician</option>
-                    <option value="Admin">Admin</option>
-
-                </select>
-
-                <label asp-for="Input.Role">
-                    Role
-                </label>
-
-                <span asp-validation-for="Input.Role"
-                      class="text-danger">
-                </span>
-            </div>
-
-            <button id="registerSubmit"
-                    type="submit"
-                    class="w-100 btn btn-lg btn-primary">
-                Create Account
-            </button>
-
-        </form>
+        </div>
 
     </div>
 </div>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" />
 }
