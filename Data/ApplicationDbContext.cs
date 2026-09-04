@@ -21,7 +21,8 @@ public DbSet<Reminder> Reminders => Set<Reminder>();
 
 public DbSet<ScheduledInspection> ScheduledInspections =>
     Set<ScheduledInspection>();
-
+public DbSet<PredictiveMaintenanceRecord> PredictiveMaintenanceRecords =>
+    Set<PredictiveMaintenanceRecord>();
 protected override void OnModelCreating(ModelBuilder builder)
 {
     base.OnModelCreating(builder);
@@ -32,6 +33,14 @@ protected override void OnModelCreating(ModelBuilder builder)
         .WithMany()
         .HasForeignKey(i => i.TechnicianId)
         .OnDelete(DeleteBehavior.Restrict);
+
+    builder.Entity<PredictiveMaintenanceRecord>()
+    .Property(p => p.Temperature)
+    .HasPrecision(5, 2);
+
+    builder.Entity<PredictiveMaintenanceRecord>()
+    .Property(p => p.TemperatureDeviation)
+    .HasPrecision(5, 2);
 
     // Inspection -> ScheduledInspection
     builder.Entity<Inspection>()

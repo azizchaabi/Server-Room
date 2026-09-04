@@ -1,0 +1,1183 @@
+@page "{id:int}"
+@model ServerRoomMonitor.Pages.Admin.PredictiveMaintenance.Room.IndexModel
+
+@{
+ViewData["Title"] = "Room Predictive Analysis";
+}
+
+<div class="room-ai-page">
+
+
+<main class="main">
+
+    <!-- HEADER -->
+
+    <header class="top">
+
+        <div>
+
+            <span class="eyebrow">
+                PREDICTIVE MAINTENANCE
+            </span>
+
+            <h1>
+                @(Model.Room?.RoomName ?? "Server Room")
+            </h1>
+
+            <p>
+                Individual AI analysis for Server Room #@(Model.Room?.ServerRoomId)
+                @if (!string.IsNullOrWhiteSpace(Model.Room?.Location))
+                {
+                    <span> · @Model.Room.Location</span>
+                }
+            </p>
+
+        </div>
+
+
+        <a asp-page="/Admin/PredictiveMaintenance/Index"
+           class="back-button">
+
+            ← All rooms
+
+        </a>
+
+    </header>
+
+
+    @if (Model.Room == null)
+    {
+        <section class="card empty-state">
+
+            <div class="empty-icon">
+                !
+            </div>
+
+            <div>
+
+                <strong>
+                    Server room not found
+                </strong>
+
+                <p>
+                    The requested server room could not be found.
+                </p>
+
+            </div>
+
+        </section>
+    }
+    else if (!Model.Room.HasPrediction)
+    {
+        <section class="card empty-state">
+
+            <div class="empty-icon">
+                AI
+            </div>
+
+            <div>
+
+                <strong>
+                    No predictive data available
+                </strong>
+
+                <p>
+                    There are currently no predictive-maintenance
+                    records for this server room.
+                </p>
+
+            </div>
+
+        </section>
+    }
+    else
+    {
+
+        <!-- AI RISK ASSESSMENT -->
+
+        <section class="risk-card">
+
+            <div class="risk-left">
+
+                <span class="section-label">
+                    AI RISK ASSESSMENT
+                </span>
+
+                <div class="risk-percentage">
+                    @Model.Room.Probability.ToString("0.0")%
+                </div>
+
+                <p>
+                    Estimated model probability of failure
+                    within 7 days
+                </p>
+
+                <span class="risk-badge
+                    @(Model.Room.RiskLevel == "High"
+                        ? "high"
+                        : Model.Room.RiskLevel == "Medium"
+                            ? "medium"
+                            : "low")">
+
+                    @Model.Room.RiskLevel risk
+
+                </span>
+
+            </div>
+
+
+            <div class="risk-right">
+
+                <div class="prediction-circle
+                    @(Model.Room.RiskLevel == "High"
+                        ? "circle-high"
+                        : Model.Room.RiskLevel == "Medium"
+                            ? "circle-medium"
+                            : "circle-low")">
+
+                    @(Model.Room.PredictedFailure ? "!" : "✓")
+
+                </div>
+
+                <strong>
+                    @(Model.Room.PredictedFailure
+                        ? "Potential failure"
+                        : "No failure predicted")
+                </strong>
+
+                <span>
+                    Model score:
+                    @Model.Room.Score.ToString("0.000")
+                </span>
+
+            </div>
+
+        </section>
+
+
+        <!-- CURRENT CONDITIONS -->
+
+        <section class="card">
+
+            <div class="card-header">
+
+                <div>
+
+                    <h2>
+                        Current conditions
+                    </h2>
+
+                    <p>
+                        Input values used by the predictive model.
+                    </p>
+
+                </div>
+
+                <span class="data-date">
+                    @Model.Room.RecordedAt.ToString("dd MMM yyyy")
+                </span>
+
+            </div>
+
+
+            <div class="condition-grid">
+
+                <div class="condition">
+
+                    <span>
+                        Temperature
+                    </span>
+
+                    <strong>
+                        @Model.Room.Temperature.ToString("0.0")°C
+                    </strong>
+
+                </div>
+
+
+                <div class="condition">
+
+                    <span>
+                        Temperature deviation
+                    </span>
+
+                    <strong>
+                        @Model.Room.TemperatureDeviation.ToString("0.0")°C
+                    </strong>
+
+                </div>
+
+
+                <div class="condition">
+
+                    <span>
+                        Days since inspection
+                    </span>
+
+                    <strong>
+                        @Model.Room.DaysSinceLastInspection
+                    </strong>
+
+                </div>
+
+
+                <div class="condition">
+
+                    <span>
+                        Days since repair
+                    </span>
+
+                    <strong>
+                        @Model.Room.DaysSinceLastRepair
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- HISTORY / CONDITIONS -->
+
+        <div class="two-column">
+
+            <section class="card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            Inspection history
+                        </h2>
+
+                        <p>
+                            Recent failure indicators.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="metric-list">
+
+                    <div class="metric">
+
+                        <span>
+                            Failed inspections — 7 days
+                        </span>
+
+                        <strong>
+                            @Model.Room.FailedInspectionsLast7Days
+                        </strong>
+
+                    </div>
+
+
+                    <div class="metric">
+
+                        <span>
+                            Failed inspections — 30 days
+                        </span>
+
+                        <strong>
+                            @Model.Room.FailedInspectionsLast30Days
+                        </strong>
+
+                    </div>
+
+
+                    <div class="metric">
+
+                        <span>
+                            Failed attempts — 30 days
+                        </span>
+
+                        <strong>
+                            @Model.Room.FailedAttemptsLast30Days
+                        </strong>
+
+                    </div>
+
+
+                    <div class="metric">
+
+                        <span>
+                            Previous problems
+                        </span>
+
+                        <strong>
+                            @Model.Room.PreviousProblems
+                        </strong>
+
+                    </div>
+
+
+                    <div class="metric">
+
+                        <span>
+                            Overdue inspections — 30 days
+                        </span>
+
+                        <strong>
+                            @Model.Room.OverdueInspectionsLast30Days
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ROOM CONDITIONS -->
+
+            <section class="card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            Room conditions
+                        </h2>
+
+                        <p>
+                            Latest recorded inspection indicators.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="status-list">
+
+                    <div class="status-item">
+
+                        <span>
+                            Air conditioning
+                        </span>
+
+                        <strong class="@(Model.Room.AirConditioningOk ? "ok" : "problem")">
+
+                            @(Model.Room.AirConditioningOk
+                                ? "✓ OK"
+                                : "✕ Problem")
+
+                        </strong>
+
+                    </div>
+
+
+                    <div class="status-item">
+
+                        <span>
+                            Overheating alarm
+                        </span>
+
+                        <strong class="@(Model.Room.NoOverheatingAlarm ? "ok" : "problem")">
+
+                            @(Model.Room.NoOverheatingAlarm
+                                ? "✓ Normal"
+                                : "✕ Alarm")
+
+                        </strong>
+
+                    </div>
+
+
+                    <div class="status-item">
+
+                        <span>
+                            Water leak
+                        </span>
+
+                        <strong class="@(Model.Room.NoWaterLeak ? "ok" : "problem")">
+
+                            @(Model.Room.NoWaterLeak
+                                ? "✓ None"
+                                : "✕ Detected")
+
+                        </strong>
+
+                    </div>
+
+
+                    <div class="status-item">
+
+                        <span>
+                            Power
+                        </span>
+
+                        <strong class="@(Model.Room.PowerOk ? "ok" : "problem")">
+
+                            @(Model.Room.PowerOk
+                                ? "✓ OK"
+                                : "✕ Problem")
+
+                        </strong>
+
+                    </div>
+
+
+                    <div class="status-item">
+
+                        <span>
+                            Room condition
+                        </span>
+
+                        <strong class="@(Model.Room.RoomClean ? "ok" : "problem")">
+
+                            @(Model.Room.RoomClean
+                                ? "✓ Clean"
+                                : "✕ Needs attention")
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+
+        <!-- PREDICTIVE HISTORY -->
+
+        <section class="card history-card">
+
+            <div class="card-header">
+
+                <div>
+
+                    <h2>
+                        Predictive history
+                    </h2>
+
+                    <p>
+                        Model predictions across the latest
+                        available records for this room.
+                    </p>
+
+                </div>
+
+                <span class="count-badge">
+                    @Model.History.Count
+                </span>
+
+            </div>
+
+
+            @if (Model.History.Count == 0)
+            {
+                <div class="empty">
+
+                    No historical predictions available.
+
+                </div>
+            }
+            else
+            {
+                <div class="history-table">
+
+                    <div class="history-header">
+
+                        <span>
+                            Date
+                        </span>
+
+                        <span>
+                            Temperature
+                        </span>
+
+                        <span>
+                            Failure probability
+                        </span>
+
+                        <span>
+                            Prediction
+                        </span>
+
+                        <span>
+                            Actual label
+                        </span>
+
+                    </div>
+
+
+                    @foreach (var item in Model.History)
+                    {
+                        <div class="history-row">
+
+                            <span>
+                                @item.RecordedAt.ToString("dd MMM yyyy")
+                            </span>
+
+                            <span>
+                                @item.Temperature.ToString("0.0")°C
+                            </span>
+
+                            <span>
+
+                                <strong>
+                                    @item.Probability.ToString("0.0")%
+                                </strong>
+
+                                <div class="mini-bar">
+
+                                    <div class="mini-fill"
+                                         style="width:@item.Probability.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)%">
+                                    </div>
+
+                                </div>
+
+                            </span>
+
+                            <span>
+
+                                <span class="history-badge
+                                    @(item.PredictedFailure
+                                        ? "failure"
+                                        : "normal")">
+
+                                    @(item.PredictedFailure
+                                        ? "Failure"
+                                        : "Normal")
+
+                                </span>
+
+                            </span>
+
+                            <span>
+
+                                <span class="actual-badge
+                                    @(item.ActualFailure
+                                        ? "actual-failure"
+                                        : "actual-normal")">
+
+                                    @(item.ActualFailure
+                                        ? "Failure"
+                                        : "Normal")
+
+                                </span>
+
+                            </span>
+
+                        </div>
+                    }
+
+                </div>
+            }
+
+        </section>
+
+
+        <!-- SYNTHETIC WARNING -->
+
+        @if (Model.Room.IsSynthetic)
+        {
+            <section class="prototype-warning">
+
+                <div class="warning-icon">
+                    !
+                </div>
+
+                <div>
+
+                    <strong>
+                        Synthetic data
+                    </strong>
+
+                    <p>
+                        This room's current prediction is based on
+                        synthetic predictive-maintenance data.
+                        It is intended for testing and demonstration
+                        and should not be treated as a production
+                        failure prediction.
+                    </p>
+
+                </div>
+
+            </section>
+        }
+
+    }
+
+</main>
+
+
+</div>
+
+<style>
+
+    * {
+        box-sizing: border-box;
+    }
+
+
+    .room-ai-page {
+        min-height: 100vh;
+        background: #f5f6f9;
+        color: #252a30;
+    }
+
+
+    .main {
+        width: 100%;
+        padding: 38px 42px 60px;
+    }
+
+
+    /* =========================================================
+       HEADER
+       ========================================================= */
+
+    .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 28px;
+    }
+
+    .eyebrow {
+        color: #9299a1;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+    }
+
+    .top h1 {
+        margin: 6px 0 4px;
+        font-size: 30px;
+        letter-spacing: -.5px;
+    }
+
+    .top p {
+        margin: 0;
+        color: #858d96;
+        font-size: 12px;
+    }
+
+    .back-button {
+        background: #20252b;
+        color: white;
+        padding: 11px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 600;
+        transition: .15s ease;
+    }
+
+    .back-button:hover {
+        background: #343a40;
+        color: white;
+        text-decoration: none;
+    }
+
+
+    /* =========================================================
+       CARDS
+       ========================================================= */
+
+    .card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    .card-header {
+        padding: 19px 22px;
+        border-bottom: 1px solid #edf0f2;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 15px;
+    }
+
+    .card-header p {
+        margin: 4px 0 0;
+        color: #9299a1;
+        font-size: 10px;
+    }
+
+    .data-date {
+        color: #9299a1;
+        font-size: 10px;
+    }
+
+    .count-badge {
+        min-width: 30px;
+        height: 30px;
+        padding: 0 9px;
+        border-radius: 50%;
+        background: #f0f2f4;
+        color: #68717a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+
+    /* =========================================================
+       RISK CARD
+       ========================================================= */
+
+    .risk-card {
+        margin-bottom: 20px;
+        padding: 27px 30px;
+        border-radius: 13px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .section-label {
+        color: #9299a1;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.4px;
+    }
+
+    .risk-percentage {
+        margin-top: 5px;
+        font-size: 44px;
+        font-weight: 750;
+        letter-spacing: -1px;
+    }
+
+    .risk-left p {
+        margin: 3px 0 12px;
+        color: #8b939b;
+        font-size: 11px;
+    }
+
+    .risk-badge {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 9px;
+        font-weight: 700;
+    }
+
+    .risk-badge.high {
+        color: #bd4a4a;
+        background: #faeeee;
+    }
+
+    .risk-badge.medium {
+        color: #ad7820;
+        background: #faf3e5;
+    }
+
+    .risk-badge.low {
+        color: #328052;
+        background: #eaf5ee;
+    }
+
+
+    .risk-right {
+        width: 210px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .prediction-circle {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+        font-weight: 700;
+        margin-bottom: 9px;
+    }
+
+    .circle-high {
+        color: #bd4a4a;
+        background: #faeeee;
+    }
+
+    .circle-medium {
+        color: #ad7820;
+        background: #faf3e5;
+    }
+
+    .circle-low {
+        color: #328052;
+        background: #eaf5ee;
+    }
+
+    .risk-right strong {
+        font-size: 12px;
+    }
+
+    .risk-right span:last-child {
+        margin-top: 5px;
+        color: #9299a1;
+        font-size: 9px;
+    }
+
+
+    /* =========================================================
+       CONDITION GRID
+       ========================================================= */
+
+    .condition-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .condition {
+        padding: 20px 22px;
+        border-right: 1px solid #edf0f2;
+    }
+
+    .condition:last-child {
+        border-right: none;
+    }
+
+    .condition span {
+        display: block;
+        color: #9299a1;
+        font-size: 9px;
+    }
+
+    .condition strong {
+        display: block;
+        margin-top: 7px;
+        font-size: 18px;
+    }
+
+
+    /* =========================================================
+       TWO COLUMN
+       ========================================================= */
+
+    .two-column {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+
+    /* =========================================================
+       METRICS
+       ========================================================= */
+
+    .metric-list {
+        padding: 3px 22px;
+    }
+
+    .metric {
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #edf0f2;
+    }
+
+    .metric:last-child {
+        border-bottom: none;
+    }
+
+    .metric span {
+        color: #737b84;
+        font-size: 10px;
+    }
+
+    .metric strong {
+        font-size: 13px;
+    }
+
+
+    /* =========================================================
+       STATUS
+       ========================================================= */
+
+    .status-list {
+        padding: 3px 22px;
+    }
+
+    .status-item {
+        min-height: 48px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #edf0f2;
+    }
+
+    .status-item:last-child {
+        border-bottom: none;
+    }
+
+    .status-item span {
+        color: #737b84;
+        font-size: 10px;
+    }
+
+    .status-item strong {
+        font-size: 10px;
+    }
+
+    .status-item .ok {
+        color: #328052;
+    }
+
+    .status-item .problem {
+        color: #bd4a4a;
+    }
+
+
+    /* =========================================================
+       HISTORY
+       ========================================================= */
+
+    .history-card {
+        margin-top: 20px;
+    }
+
+    .history-table {
+        width: 100%;
+    }
+
+    .history-header,
+    .history-row {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr 1.5fr 1fr 1fr;
+        align-items: center;
+        gap: 15px;
+        padding: 14px 22px;
+    }
+
+    .history-header {
+        background: #fafbfc;
+        color: #9299a1;
+        font-size: 8px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+    .history-row {
+        border-top: 1px solid #edf0f2;
+        color: #68717a;
+        font-size: 10px;
+    }
+
+    .history-row strong {
+        color: #30363c;
+    }
+
+    .mini-bar {
+        width: 80px;
+        height: 4px;
+        margin-top: 4px;
+        background: #edf0f2;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .mini-fill {
+        height: 100%;
+        background: #6c757d;
+        border-radius: 10px;
+    }
+
+    .history-badge,
+    .actual-badge {
+        display: inline-block;
+        padding: 5px 7px;
+        border-radius: 5px;
+        font-size: 8px;
+        font-weight: 700;
+    }
+
+    .history-badge.failure,
+    .actual-badge.actual-failure {
+        color: #bd4a4a;
+        background: #faeeee;
+    }
+
+    .history-badge.normal,
+    .actual-badge.actual-normal {
+        color: #328052;
+        background: #eaf5ee;
+    }
+
+
+    /* =========================================================
+       WARNING
+       ========================================================= */
+
+    .prototype-warning {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-top: 20px;
+        padding: 15px 17px;
+        background: #faf3e5;
+        border: 1px solid #f0dfba;
+        border-radius: 10px;
+    }
+
+    .warning-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: #f3e5c9;
+        color: #ad7820;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .prototype-warning strong {
+        display: block;
+        color: #8f6a2b;
+        font-size: 10px;
+    }
+
+    .prototype-warning p {
+        margin: 5px 0 0;
+        color: #8d7650;
+        font-size: 10px;
+        line-height: 1.5;
+    }
+
+
+    /* =========================================================
+       EMPTY
+       ========================================================= */
+
+    .empty-state {
+        padding: 45px 25px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .empty-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: #f0f2f4;
+        color: #737b84;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .empty-state strong {
+        display: block;
+        font-size: 13px;
+    }
+
+    .empty-state p {
+        margin: 4px 0 0;
+        color: #9299a1;
+        font-size: 10px;
+    }
+
+    .empty {
+        padding: 35px 22px;
+        color: #9299a1;
+        font-size: 10px;
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+
+    @@media (max-width: 900px) {
+
+        .main {
+            padding: 30px 25px 50px;
+        }
+
+        .condition-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .condition {
+            border-bottom: 1px solid #edf0f2;
+        }
+
+        .two-column {
+            grid-template-columns: 1fr;
+        }
+
+        .history-table {
+            overflow-x: auto;
+        }
+
+        .history-header,
+        .history-row {
+            min-width: 720px;
+        }
+
+    }
+
+
+    @@media (max-width: 650px) {
+
+        .main {
+            padding: 25px 18px 40px;
+        }
+
+        .top {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .back-button {
+            width: 100%;
+            text-align: center;
+        }
+
+        .risk-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 25px;
+        }
+
+        .risk-right {
+            width: 100%;
+        }
+
+        .condition-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .condition {
+            border-right: none;
+        }
+
+    }
+
+</style>

@@ -1,0 +1,24 @@
+@page
+@model ServerRoomMonitor.Pages.Admin.Tools.TunePredictiveModelModel
+
+@{
+    ViewData["Title"] = "Tune Predictive Model";
+}
+
+<div class="container mt-4">
+    <h1>Predictive Model Tuning</h1>
+
+    <div class="alert alert-info mt-3">
+        @Model.Message
+    </div>
+
+    <p>
+        This tool tests different LightGBM hyperparameter combinations
+        using 5-fold cross-validation.
+    </p>
+
+    <p>
+        The tuning process does not replace or save the production model.
+        It only prints the results to the application console.
+    </p>
+</div>

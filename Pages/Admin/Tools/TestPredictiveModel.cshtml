@@ -1,0 +1,24 @@
+@page
+@model ServerRoomMonitor.Pages.Admin.Tools.TestPredictiveModelModel
+
+@{
+    ViewData["Title"] = "Test Predictive Model";
+}
+
+<div class="container mt-4">
+
+    <h1>Test Predictive Maintenance Model</h1>
+
+    <div class="alert alert-info mt-3">
+        This page tests the trained ML model against a predictive-maintenance record.
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Prediction Result</h5>
+
+            <pre class="mt-3">@Model.Result</pre>
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,33 @@
+@page
+@model ServerRoomMonitor.Pages.Admin.Tools.FeatureImportanceModel
+
+@{
+ViewData["Title"] = "Predictive Feature Importance";
+}
+
+<div class="container mt-4">
+    <h1>Predictive Feature Importance</h1>
+
+<div class="alert alert-info mt-3">
+    @Model.Message
+</div>
+
+<p>
+    This tool analyzes which predictive-maintenance features
+    contribute most to the model's ability to distinguish
+    between normal conditions and failures.
+</p>
+
+<p>
+    The results are displayed in the application console.
+    A larger AUC drop means the feature is more important
+    to the model.
+</p>
+
+<div class="alert alert-warning mt-3">
+    <strong>Note:</strong>
+    This is a diagnostic tool only. It does not modify,
+    replace, or save the production predictive model.
+</div>
+
+</div>

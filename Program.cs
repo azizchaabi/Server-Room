@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ServerRoomMonitor.Data;
 using ServerRoomMonitor.Services;
+using ServerRoomMonitor.ML;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,14 @@ builder.Services.AddScoped<EmailNotificationService>();
 
 // Report PDF service.
 builder.Services.AddScoped<ReportPdfService>();
+
+builder.Services.AddScoped<PredictiveDataGeneratorService>();
+
+builder.Services.AddScoped<PredictiveMaintenanceModelTrainer>();
+
+builder.Services.AddScoped<PredictiveMaintenanceModelTuning>();
+
+builder.Services.AddScoped<PredictiveMaintenancePredictionService>();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {

@@ -1,0 +1,974 @@
+@page
+@model ServerRoomMonitor.Pages.Admin.PredictiveMaintenance.IndexModel
+
+@{
+    ViewData["Title"] = "Predictive Maintenance";
+}
+
+<div class="predictive-page">
+
+
+    <main class="main">
+
+        <!-- HEADER -->
+
+        <header class="top">
+
+            <div>
+                <span class="eyebrow">ARTIFICIAL INTELLIGENCE</span>
+
+                <h1>Predictive Maintenance</h1>
+
+                <p>
+                    Monitor AI predictions for potential server-room failures.
+                </p>
+            </div>
+
+            <a asp-page="/Admin/Index" class="back-button">
+                ← Dashboard
+            </a>
+
+        </header>
+
+
+        <!-- MODEL STATUS -->
+
+        <section class="model-status">
+
+            <div class="model-icon">
+                AI
+            </div>
+
+            <div class="model-info">
+
+                <span class="label">
+                    Predictive model
+                </span>
+
+                <strong>
+                    @(Model.ModelAvailable
+                        ? "Model available"
+                        : "Model unavailable")
+                </strong>
+
+                <small>
+                    LightGBM binary classification model
+                </small>
+
+            </div>
+
+            <div class="model-badge @(Model.ModelAvailable ? "model-ready" : "model-error")">
+
+                @(Model.ModelAvailable ? "READY" : "OFFLINE")
+
+            </div>
+
+        </section>
+
+
+        @if (!Model.ModelAvailable)
+        {
+            <section class="card empty-card">
+
+                <div class="empty-icon">
+                    AI
+                </div>
+
+                <div>
+
+                    <strong>
+                        No predictive data available
+                    </strong>
+
+                    <p>
+                        Generate predictive-maintenance data and train
+                        the model before using this page.
+                    </p>
+
+                </div>
+
+            </section>
+        }
+        else
+        {
+
+            <!-- STATISTICS -->
+
+            <section class="stats">
+
+                <div class="stat">
+
+                    <div class="stat-icon blue">
+                        AI
+                    </div>
+
+                    <div>
+                        <span>Rooms analyzed</span>
+
+                        <strong>
+                            @Model.TotalPredictions
+                        </strong>
+                    </div>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <div class="stat-icon red">
+                        !
+                    </div>
+
+                    <div>
+                        <span>High risk</span>
+
+                        <strong class="red">
+                            @Model.HighRiskCount
+                        </strong>
+                    </div>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <div class="stat-icon green">
+                        ✓
+                    </div>
+
+                    <div>
+                        <span>Low risk</span>
+
+                        <strong class="green">
+                            @Model.LowRiskCount
+                        </strong>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- PREDICTIONS -->
+
+            <section class="card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            Server room predictions
+                        </h2>
+
+                        <p>
+                            Latest AI prediction available for each server room.
+                        </p>
+
+                    </div>
+
+                    <span class="count-badge">
+                        @Model.TotalPredictions
+                    </span>
+
+                </div>
+
+
+                @if (!Model.Predictions.Any())
+                {
+                    <div class="empty">
+
+                        <div class="empty-icon">
+                            —
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                No predictions available
+                            </strong>
+
+                            <p>
+                                No server-room predictions could be generated.
+                            </p>
+
+                        </div>
+
+                    </div>
+                }
+                else
+                {
+                    <div class="prediction-list">
+
+                        @foreach (var prediction in Model.Predictions)
+                        {
+                            <a href="/Admin/PredictiveMaintenance/Room/@prediction.ServerRoomId" class="prediction-row">
+
+
+                                <!-- RISK ICON -->
+
+                                <div class="risk-icon
+                                    @(prediction.RiskLevel == "High"
+                                          ? "risk-high"
+                                          : prediction.RiskLevel == "Medium"
+                                              ? "risk-medium"
+                                              : "risk-low")">
+
+                                    @(prediction.RiskLevel == "High"
+                                        ? "!"
+                                        : prediction.RiskLevel == "Medium"
+                                            ? "!"
+                                            : "✓")
+
+                                </div>
+
+
+                                <!-- ROOM -->
+
+                                <div class="room-info">
+
+                                    <strong>
+                                        @prediction.RoomName
+                                    </strong>
+
+                                    <span>
+                                        @prediction.Location
+                                    </span>
+
+
+                                    <span>
+                                        Data recorded
+                                        @prediction.RecordedAt.ToString("dd MMM yyyy")
+                                    </span>
+
+                                </div>
+
+
+                                <!-- TEMPERATURE -->
+
+                                <div class="prediction-temperature">
+
+                                    <span>
+                                        Temperature
+                                    </span>
+
+                                    <strong>
+                                        @prediction.Temperature.ToString("0.0")°C
+                                    </strong>
+
+                                </div>
+
+
+                                <!-- PROBABILITY -->
+
+                                <div class="probability">
+
+                                    <span>
+                                        Failure probability
+                                    </span>
+
+                                    <strong>
+                                        @prediction.Probability.ToString("0.0")%
+                                    </strong>
+
+                                    <div class="probability-bar">
+
+                                        <div class="probability-fill
+                                            @(prediction.RiskLevel == "High"
+                                                  ? "fill-high"
+                                                  : prediction.RiskLevel == "Medium"
+                                                      ? "fill-medium"
+                                                      : "fill-low")"
+                                             style="width:@prediction.Probability.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)%">
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- RISK -->
+
+                                <div class="risk-result">
+
+                                    <span class="risk-badge
+                                        @(prediction.RiskLevel == "High"
+                                                ? "badge-high"
+                                                : prediction.RiskLevel == "Medium"
+                                                    ? "badge-medium"
+                                                    : "badge-low")">
+
+                                        @prediction.RiskLevel risk
+
+                                    </span>
+
+                                    <small>
+                                        @(prediction.PredictedFailure
+                                            ? "Potential failure"
+                                            : "No failure predicted")
+                                    </small>
+
+                                </div>
+
+
+                                <!-- NAVIGATION -->
+
+                                <div class="view-room">
+                                    →
+                                </div>
+
+                            </a>
+                        }
+
+                    </div>
+                }
+
+            </section>
+
+
+            <!-- PROTOTYPE WARNING -->
+
+            <section class="prototype-warning">
+
+                <div class="warning-icon">
+                    !
+                </div>
+
+                <div>
+
+                    <strong>
+                        AI prototype — synthetic data
+                    </strong>
+
+                    <p>
+                        The current predictive model was trained using
+                        synthetic predictive-maintenance data. These
+                        predictions are for testing and demonstration
+                        purposes only and should not be treated as
+                        production failure predictions.
+                    </p>
+
+                </div>
+
+            </section>
+
+        }
+
+    </main>
+
+
+</div>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+
+    .predictive-page {
+        width: 100%;
+        min-height: 100vh;
+        background: #f5f6f9;
+        color: #252a30;
+    }
+
+
+    .main {
+        width: 100%;
+        padding: 38px 42px 60px;
+    }
+
+
+    /* =========================================================
+       HEADER
+       ========================================================= */
+
+    .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 28px;
+    }
+
+    .eyebrow {
+        color: #9299a1;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+    }
+
+    .top h1 {
+        margin: 6px 0 4px;
+        font-size: 32px;
+        letter-spacing: -.5px;
+    }
+
+    .top p {
+        margin: 0;
+        color: #858d96;
+        font-size: 13px;
+    }
+
+    .back-button {
+        background: #20252b;
+        color: white;
+        padding: 11px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 600;
+        transition: .15s ease;
+    }
+
+    .back-button:hover {
+        background: #343a40;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+
+    /* =========================================================
+       MODEL STATUS
+       ========================================================= */
+
+    .model-status {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .model-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
+        background: #edf3fb;
+        color: #3974b9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .model-info {
+        flex: 1;
+    }
+
+    .model-info span,
+    .model-info strong,
+    .model-info small {
+        display: block;
+    }
+
+    .model-info .label {
+        color: #9299a1;
+        font-size: 9px;
+    }
+
+    .model-info strong {
+        margin-top: 3px;
+        font-size: 13px;
+    }
+
+    .model-info small {
+        margin-top: 3px;
+        color: #9299a1;
+        font-size: 9px;
+    }
+
+    .model-badge {
+        padding: 6px 9px;
+        border-radius: 6px;
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: .7px;
+    }
+
+    .model-ready {
+        background: #eaf5ee;
+        color: #328052;
+    }
+
+    .model-error {
+        background: #faeeee;
+        color: #bd4a4a;
+    }
+
+
+    /* =========================================================
+       STATS
+       ========================================================= */
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 22px;
+    }
+
+    .stat {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .stat-icon {
+        width: 43px;
+        height: 43px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .stat-icon.blue {
+        background: #edf3fb;
+        color: #3974b9;
+    }
+
+    .stat-icon.red {
+        background: #faeeee;
+        color: #bd4a4a;
+    }
+
+    .stat-icon.green {
+        background: #eaf5ee;
+        color: #328052;
+    }
+
+    .stat span {
+        display: block;
+        color: #858d96;
+        font-size: 11px;
+    }
+
+    .stat strong {
+        display: block;
+        margin-top: 5px;
+        font-size: 27px;
+    }
+
+    .green {
+        color: #328052;
+    }
+
+    .red {
+        color: #bd4a4a;
+    }
+
+
+    /* =========================================================
+       CARD
+       ========================================================= */
+
+    .card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .card-header {
+        padding: 20px 22px;
+        border-bottom: 1px solid #edf0f2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 16px;
+    }
+
+    .card-header p {
+        margin: 4px 0 0;
+        color: #969da5;
+        font-size: 11px;
+    }
+
+    .count-badge {
+        min-width: 30px;
+        height: 30px;
+        padding: 0 9px;
+        border-radius: 50%;
+        background: #f0f2f4;
+        color: #68717a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+
+    /* =========================================================
+       PREDICTION LIST
+       ========================================================= */
+
+    .prediction-row {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 18px 22px;
+        border-bottom: 1px solid #edf0f2;
+
+        /* Navigation */
+
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+
+        transition:
+            background .15s ease,
+            padding-left .15s ease;
+    }
+
+    .prediction-row:last-child {
+        border-bottom: none;
+    }
+
+    .prediction-row:hover {
+        background: #fafbfc;
+        color: inherit;
+        text-decoration: none;
+        padding-left: 26px;
+    }
+
+
+    .risk-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .risk-high {
+        background: #faeeee;
+        color: #bd4a4a;
+    }
+
+    .risk-medium {
+        background: #faf3e5;
+        color: #ad7820;
+    }
+
+    .risk-low {
+        background: #eaf5ee;
+        color: #328052;
+    }
+
+
+    .room-info {
+        flex: 1;
+        min-width: 160px;
+    }
+
+    .room-info strong {
+        display: block;
+        color: #30363c;
+        font-size: 12px;
+    }
+
+    .room-info span {
+        display: block;
+        margin-top: 4px;
+        color: #9299a1;
+        font-size: 9px;
+    }
+
+
+    .prediction-temperature {
+        width: 85px;
+        text-align: center;
+    }
+
+    .prediction-temperature span,
+    .prediction-temperature strong {
+        display: block;
+    }
+
+    .prediction-temperature span {
+        color: #9ba2aa;
+        font-size: 9px;
+    }
+
+    .prediction-temperature strong {
+        margin-top: 3px;
+        color: #363d44;
+        font-size: 12px;
+    }
+
+
+    .probability {
+        width: 170px;
+    }
+
+    .probability span,
+    .probability strong {
+        display: block;
+    }
+
+    .probability span {
+        color: #9ba2aa;
+        font-size: 9px;
+    }
+
+    .probability strong {
+        margin-top: 3px;
+        color: #363d44;
+        font-size: 12px;
+    }
+
+    .probability-bar {
+        width: 100%;
+        height: 5px;
+        margin-top: 6px;
+        background: #edf0f2;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .probability-fill {
+        height: 100%;
+        border-radius: 10px;
+    }
+
+    .fill-high {
+        background: #bd4a4a;
+    }
+
+    .fill-medium {
+        background: #ad7820;
+    }
+
+    .fill-low {
+        background: #328052;
+    }
+
+
+    .risk-result {
+        width: 125px;
+        text-align: right;
+    }
+
+    .risk-badge {
+        display: inline-block;
+        padding: 5px 8px;
+        border-radius: 6px;
+        font-size: 9px;
+        font-weight: 700;
+    }
+
+    .badge-high {
+        background: #faeeee;
+        color: #bd4a4a;
+    }
+
+    .badge-medium {
+        background: #faf3e5;
+        color: #ad7820;
+    }
+
+    .badge-low {
+        background: #eaf5ee;
+        color: #328052;
+    }
+
+    .risk-result small {
+        display: block;
+        margin-top: 5px;
+        color: #9ba2aa;
+        font-size: 9px;
+    }
+
+
+    /* =========================================================
+       VIEW ROOM
+       ========================================================= */
+
+    .view-room {
+        width: 25px;
+        color: #9ba2aa;
+        font-size: 17px;
+        font-weight: 600;
+        text-align: center;
+        transition: .15s ease;
+        flex-shrink: 0;
+    }
+
+    .prediction-row:hover .view-room {
+        color: #30363c;
+        transform: translateX(3px);
+    }
+
+
+    /* =========================================================
+       EMPTY
+       ========================================================= */
+
+    .empty-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 40px 22px;
+    }
+
+    .empty {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 40px 22px;
+    }
+
+    .empty-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #f0f2f4;
+        color: #8b939b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .empty strong,
+    .empty-card strong {
+        font-size: 13px;
+    }
+
+    .empty p,
+    .empty-card p {
+        margin: 4px 0 0;
+        color: #9299a1;
+        font-size: 11px;
+    }
+
+
+    /* =========================================================
+       PROTOTYPE WARNING
+       ========================================================= */
+
+    .prototype-warning {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-top: 22px;
+        padding: 15px 17px;
+        background: #faf3e5;
+        border: 1px solid #f0dfba;
+        border-radius: 10px;
+    }
+
+    .warning-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: #f3e5c9;
+        color: #ad7820;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .prototype-warning strong {
+        display: block;
+        color: #8f6a2b;
+        font-size: 10px;
+    }
+
+    .prototype-warning p {
+        margin: 5px 0 0;
+        color: #8d7650;
+        font-size: 10px;
+        line-height: 1.5;
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+
+    @@media (max-width: 900px) {
+
+        .main {
+            padding: 30px 25px;
+        }
+
+        .prediction-row {
+            flex-wrap: wrap;
+        }
+
+        .room-info {
+            min-width: 200px;
+        }
+
+        .risk-result {
+            width: auto;
+            text-align: left;
+        }
+
+    }
+
+
+    @@media (max-width: 700px) {
+
+        .main {
+            padding: 25px 18px 40px;
+        }
+
+        .top {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .back-button {
+            width: 100%;
+            text-align: center;
+        }
+
+        .stats {
+            grid-template-columns: 1fr;
+        }
+
+        .prediction-row {
+            align-items: flex-start;
+        }
+
+        .prediction-temperature,
+        .probability {
+            width: calc(50% - 30px);
+            text-align: left;
+        }
+
+        .room-info {
+            min-width: 0;
+        }
+
+    }
+</style>
